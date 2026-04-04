@@ -1,50 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoArchive</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file for styling -->
-    <script src="script.js" defer></script> <!-- Link to a JS file for interactivity -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronoArchive – Explore Historical Wonders</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0e17;
+      color: #fffffe;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+      border-bottom: 2px solid #e94560;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      letter-spacing: 0.04em;
+      color: #fffffe;
+    }
+
+    header h1 span { color: #e94560; }
+
+    #searchBar {
+      margin-top: 1rem;
+      width: min(100%, 480px);
+      padding: 0.65rem 1.2rem;
+      border-radius: 999px;
+      border: 2px solid #e94560;
+      background: rgba(255,255,255,0.07);
+      color: #fffffe;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+
+    #searchBar::placeholder { color: #a7a9be; }
+    #searchBar:focus { box-shadow: 0 0 0 3px rgba(233,69,96,0.35); }
+
+    /* ── Tabs ── */
+    #tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 2px solid #e94560;
+      background: transparent;
+      color: #e94560;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: #e94560;
+      color: #fffffe;
+    }
+
+    /* ── Country grid ── */
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    #noResults {
+      text-align: center;
+      color: #a7a9be;
+      margin-top: 3rem;
+      font-size: 1.1rem;
+      display: none;
+    }
+
+    #countryGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.4rem;
+      margin-top: 1.4rem;
+    }
+
+    .country-card {
+      background: #16213e;
+      border-radius: 14px;
+      border: 1px solid #1e2d4a;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+
+    .country-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(233,69,96,0.2);
+    }
+
+    .card-emoji { font-size: 2.4rem; }
+
+    .country-card h2 {
+      font-size: 1.2rem;
+      color: #fffffe;
+    }
+
+    .card-region {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #e94560;
+      font-weight: 600;
+    }
+
+    .country-card p {
+      font-size: 0.9rem;
+      color: #a7a9be;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .card-btn {
+      align-self: flex-start;
+      margin-top: 0.4rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 2px solid #e94560;
+      background: transparent;
+      color: #e94560;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .card-btn:hover {
+      background: #e94560;
+      color: #fffffe;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: #16213e;
+      border-radius: 16px;
+      border: 1px solid #e94560;
+      width: min(100%, 640px);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      color: #a7a9be;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: #e94560; }
+
+    .modal-box h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+
+    .modal-region {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #e94560;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .modal-section { margin-top: 1.2rem; }
+    .modal-section h3 {
+      font-size: 0.95rem;
+      color: #e94560;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .modal-section ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .modal-section ul li::before { content: '→ '; color: #e94560; }
+    .modal-section ul li { font-size: 0.92rem; color: #a7a9be; line-height: 1.5; }
+
+    /* Timeline strip */
+    .timeline-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .timeline-strip span {
+      background: #0f3460;
+      border: 1px solid #e94560;
+      border-radius: 6px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.8rem;
+      color: #fffffe;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 1.2rem;
+      font-size: 0.85rem;
+      color: #a7a9be;
+      border-top: 1px solid #1e2d4a;
+    }
+
+    footer a { color: #e94560; text-decoration: none; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>ChronoArchive: Explore Historical Wonders</h1>
-        <input type="text" id="searchBar" placeholder="Search for a country...">
-    </header>
-    
-    <main id="countryList">
-        <div class="country" id="country1">
-            <h2>Italy</h2>
-            <p>Explore Italy's rich history with artifacts and museums.</p>
-            <button onclick="openModal('italyModal')">More Info</button>
-        </div>
-        <div class="country" id="country2">
-            <h2>Egypt</h2>
-            <p>Discover the ancient civilization of Egypt.</p>
-            <button onclick="openModal('egyptModal')">More Info</button>
-        </div>
-        <!-- Add more countries as needed -->
-    </main>
 
-    <!-- Modal Structure -->
-    <div class="modal" id="italyModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('italyModal')">&times;</span>
-            <h2>Italy</h2>
-            <p>Detailed historical data about Italy...</p>
-        </div>
-    </div>
-    <div class="modal" id="egyptModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('egyptModal')">&times;</span>
-            <h2>Egypt</h2>
-            <p>Detailed historical data about Egypt...</p>
-        </div>
-    </div>
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <h1><span>Chrono</span>Archive – Explore Historical Wonders</h1>
+    <input type="text" id="searchBar" placeholder="Search for a country or region…" aria-label="Search countries">
+  </header>
 
-    <footer>
-        <p>ChronoArchive &copy; 2026</p>
-    </footer>
+  <!-- ═══ REGION TABS ═══ -->
+  <div id="tabs">
+    <button class="tab-btn active" data-region="all">All</button>
+    <button class="tab-btn" data-region="Europe">Europe</button>
+    <button class="tab-btn" data-region="Africa">Africa</button>
+    <button class="tab-btn" data-region="Asia">Asia</button>
+    <button class="tab-btn" data-region="Americas">Americas</button>
+    <button class="tab-btn" data-region="Middle East">Middle East</button>
+  </div>
+
+  <!-- ═══ MAIN GRID ═══ -->
+  <main>
+    <p id="noResults">No countries match your search.</p>
+    <div id="countryGrid"></div>
+  </main>
+
+  <!-- ═══ MODAL ═══ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <p>ChronoArchive &copy; 2026 &mdash; Preserving human heritage, one timeline at a time.</p>
+  </footer>
+
+  <script>
+    // ── Country data ──────────────────────────────────────────────────────────
+    const countries = [
+      {
+        id: 'italy',
+        name: 'Italy',
+        emoji: '🇮🇹',
+        region: 'Europe',
+        summary: 'Home of the Roman Empire, Renaissance art, and millennia of Western civilisation.',
+        museums: ['Uffizi Gallery (Florence)', 'Vatican Museums (Rome)', 'Borghese Gallery'],
+        artifacts: ['Colosseum (Rome)', 'Pompeii ruins', 'Leonardo\'s The Last Supper'],
+        timeline: ['Ancient Rome 753 BC', 'Roman Republic', 'Roman Empire', 'Medieval Italy', 'Renaissance', 'Unification 1861', 'Modern Republic'],
+        gap: 'Dark Ages transition from Late Antiquity is under-documented in many regional archives.'
+      },
+      {
+        id: 'egypt',
+        name: 'Egypt',
+        emoji: '🇪🇬',
+        region: 'Africa',
+        summary: 'One of the world\'s oldest civilisations, shaped by pharaohs, pyramids and the Nile.',
+        museums: ['Egyptian Museum (Cairo)', 'Grand Egyptian Museum', 'Luxor Museum'],
+        artifacts: ['Rosetta Stone (British Museum)', 'Tutankhamun\'s Mask', 'Great Pyramid of Giza'],
+        timeline: ['Predynastic Egypt ~5000 BC', 'Old Kingdom', 'Middle Kingdom', 'New Kingdom', 'Ptolemaic Egypt', 'Roman Egypt', 'Islamic Egypt', 'Modern Egypt'],
+        gap: 'Transitional periods between dynasties remain sparsely documented.'
+      },
+      {
+        id: 'greece',
+        name: 'Greece',
+        emoji: '🇬🇷',
+        region: 'Europe',
+        summary: 'Birthplace of democracy, philosophy, and the Olympic Games.',
+        museums: ['Acropolis Museum (Athens)', 'National Archaeological Museum', 'Museum of Cycladic Art'],
+        artifacts: ['Parthenon Marbles', 'Antikythera Mechanism', 'Venus de Milo (Louvre)'],
+        timeline: ['Minoan Civilisation ~3000 BC', 'Mycenaean Greece', 'Archaic Period', 'Classical Greece', 'Hellenistic Period', 'Roman Greece', 'Byzantine Era', 'Modern Greece'],
+        gap: 'Greek Dark Ages (~1100–800 BC) have limited written records.'
+      },
+      {
+        id: 'china',
+        name: 'China',
+        emoji: '🇨🇳',
+        region: 'Asia',
+        summary: 'One of the world\'s oldest continuous civilisations with over 4,000 years of recorded history.',
+        museums: ['National Museum of China (Beijing)', 'Shanghai Museum', 'Palace Museum (Forbidden City)'],
+        artifacts: ['Terracotta Army (Xi\'an)', 'The Great Wall', 'Oracle Bones'],
+        timeline: ['Shang Dynasty ~1600 BC', 'Zhou Dynasty', 'Qin Dynasty', 'Han Dynasty', 'Tang Dynasty', 'Song Dynasty', 'Ming Dynasty', 'Qing Dynasty', 'Republic of China', 'People\'s Republic'],
+        gap: 'Pre-Shang Xia Dynasty records are largely unverified archaeologically.'
+      },
+      {
+        id: 'india',
+        name: 'India',
+        emoji: '🇮🇳',
+        region: 'Asia',
+        summary: 'Ancient land of the Indus Valley Civilisation, Vedic culture, and diverse empires.',
+        museums: ['National Museum (New Delhi)', 'Indian Museum (Kolkata)', 'Chhatrapati Shivaji Maharaj Vastu Sangrahalaya'],
+        artifacts: ['Dancing Girl of Mohenjo-daro', 'Ashoka Pillars', 'Ellora Caves'],
+        timeline: ['Indus Valley ~3300 BC', 'Vedic Period', 'Maurya Empire', 'Gupta Empire', 'Mughal Empire', 'British Raj', 'Independence 1947'],
+        gap: 'Post-Indus Valley collapse (~1900 BC) transition is poorly understood.'
+      },
+      {
+        id: 'mexico',
+        name: 'Mexico',
+        emoji: '🇲🇽',
+        region: 'Americas',
+        summary: 'Land of the Maya and Aztec empires, blending indigenous and Spanish colonial heritage.',
+        museums: ['National Museum of Anthropology (Mexico City)', 'Templo Mayor Museum', 'Palenque Site Museum'],
+        artifacts: ['Aztec Sun Stone', 'Maya Codices', 'Teotihuacan Pyramids'],
+        timeline: ['Olmec Civilisation ~1500 BC', 'Teotihuacan', 'Classic Maya', 'Toltec', 'Aztec Empire', 'Spanish Conquest 1521', 'Mexican Independence 1821', 'Modern Mexico'],
+        gap: 'Pre-Olmec Mesoamerican societies are largely undocumented.'
+      },
+      {
+        id: 'iraq',
+        name: 'Iraq',
+        emoji: '🇮🇶',
+        region: 'Middle East',
+        summary: 'Ancient Mesopotamia — the cradle of civilisation, home to Sumer, Babylon, and Assyria.',
+        museums: ['Iraq Museum (Baghdad)', 'Mosul Museum', 'Erbil Civilisation Museum'],
+        artifacts: ['Standard of Ur (British Museum)', 'Code of Hammurabi stele', 'Ishtar Gate (Pergamon Museum)'],
+        timeline: ['Ubaid Period ~5500 BC', 'Sumer', 'Akkadian Empire', 'Babylon', 'Assyrian Empire', 'Achaemenid Persia', 'Islamic Caliphate', 'Ottoman Rule', 'Modern Iraq'],
+        gap: 'Many cuneiform tablets from Nippur remain untranslated and under-studied.'
+      },
+      {
+        id: 'peru',
+        name: 'Peru',
+        emoji: '🇵🇪',
+        region: 'Americas',
+        summary: 'Heart of the Inca Empire and home to one of the most sophisticated pre-Columbian civilisations.',
+        museums: ['Larco Museum (Lima)', 'National Museum of Archaeology (Lima)', 'Machu Picchu Site Museum'],
+        artifacts: ['Machu Picchu citadel', 'Nazca Lines', 'Gold of the Incas collection'],
+        timeline: ['Caral Civilisation ~3000 BC', 'Chavín', 'Tiwanaku', 'Wari Empire', 'Inca Empire', 'Spanish Conquest 1532', 'Viceroyalty of Peru', 'Independence 1821'],
+        gap: 'Pre-Inca Amazonian cultures are significantly under-researched.'
+      }
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let activeRegion = 'all';
+    let searchQuery = '';
+
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+    const grid        = document.getElementById('countryGrid');
+    const noResults   = document.getElementById('noResults');
+    const searchBar   = document.getElementById('searchBar');
+    const tabBtns     = document.querySelectorAll('.tab-btn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalClose  = document.getElementById('modalClose');
+    const modalBody   = document.getElementById('modalBody');
+
+    // ── Render cards ──────────────────────────────────────────────────────────
+    function renderCards() {
+      const q = searchQuery.toLowerCase();
+      const filtered = countries.filter(c => {
+        const matchRegion = activeRegion === 'all' || c.region === activeRegion;
+        const matchSearch = !q || c.name.toLowerCase().includes(q) || c.region.toLowerCase().includes(q);
+        return matchRegion && matchSearch;
+      });
+
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        noResults.style.display = 'block';
+        return;
+      }
+      noResults.style.display = 'none';
+
+      filtered.forEach(c => {
+        const card = document.createElement('article');
+        card.className = 'country-card';
+        card.innerHTML = `
+          <div class="card-emoji">${c.emoji}</div>
+          <h2>${c.name}</h2>
+          <div class="card-region">${c.region}</div>
+          <p>${c.summary}</p>
+          <button class="card-btn" data-id="${c.id}">More Info</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // ── Open modal ────────────────────────────────────────────────────────────
+    function openModal(id) {
+      const c = countries.find(x => x.id === id);
+      if (!c) return;
+
+      const timelineHTML = c.timeline.map(t => `<span>${t}</span>`).join('');
+      const museumsHTML  = c.museums.map(m => `<li>${m}</li>`).join('');
+      const artHTML      = c.artifacts.map(a => `<li>${a}</li>`).join('');
+
+      modalBody.innerHTML = `
+        <h2 id="modalTitle">${c.emoji} ${c.name}</h2>
+        <div class="modal-region">${c.region}</div>
+        <p style="color:#a7a9be;font-size:.93rem;line-height:1.6">${c.summary}</p>
+
+        <div class="modal-section">
+          <h3>🏛 Museums &amp; Libraries</h3>
+          <ul>${museumsHTML}</ul>
+        </div>
+
+        <div class="modal-section">
+          <h3>🏺 Notable Artifacts &amp; Sites</h3>
+          <ul>${artHTML}</ul>
+        </div>
+
+        <div class="modal-section">
+          <h3>📅 Chronological Timeline</h3>
+          <div class="timeline-strip">${timelineHTML}</div>
+        </div>
+
+        <div class="modal-section">
+          <h3>🔍 Gap Detection</h3>
+          <ul><li>${c.gap}</li></ul>
+        </div>
+      `;
+
+      modalOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // ── Event listeners ───────────────────────────────────────────────────────
+    searchBar.addEventListener('input', () => {
+      searchQuery = searchBar.value;
+      renderCards();
+    });
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeRegion = btn.dataset.region;
+        renderCards();
+      });
+    });
+
+    // Delegated click on grid for "More Info" buttons
+    grid.addEventListener('click', e => {
+      const btn = e.target.closest('.card-btn');
+      if (btn) openModal(btn.dataset.id);
+    });
+
+    modalClose.addEventListener('click', closeModal);
+
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    renderCards();
+  </script>
 </body>
 </html>
