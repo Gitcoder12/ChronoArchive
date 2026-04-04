@@ -1,50 +1,1182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoArchive</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file for styling -->
-    <script src="script.js" defer></script> <!-- Link to a JS file for interactivity -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChronoArchive — Explore Historical Wonders</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0d1117;
+  --bg-card: #111827;
+  --accent-cyan: #00f5ff;
+  --accent-purple: #7b2fff;
+  --accent-green: #00ff88;
+  --accent-red: #ff4466;
+  --accent-yellow: #ffcc00;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #1e293b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:1000;
+  background:rgba(10,10,15,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--accent-cyan);
+  box-shadow:0 0 20px rgba(0,245,255,.15);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+}
+.nav-brand{
+  font-size:1.25rem;font-weight:700;letter-spacing:.08em;
+  color:var(--accent-cyan);
+  text-shadow:0 0 12px var(--accent-cyan);
+}
+.nav-brand span{color:var(--accent-purple);text-shadow:0 0 12px var(--accent-purple);}
+.nav-links{display:flex;gap:.25rem;}
+.nav-links a{
+  color:var(--text-secondary);
+  text-decoration:none;
+  padding:.4rem .85rem;
+  border-radius:6px;
+  font-size:.875rem;letter-spacing:.04em;
+  transition:color .2s,background .2s,box-shadow .2s;
+}
+.nav-links a:hover{
+  color:var(--accent-cyan);
+  background:rgba(0,245,255,.08);
+  box-shadow:0 0 10px rgba(0,245,255,.2);
+}
+
+/* ── SEARCH ── */
+.search-wrapper{
+  padding:1.5rem 2rem .5rem;
+  display:flex;justify-content:center;
+}
+#globalSearch{
+  width:100%;max-width:560px;
+  background:var(--bg-card);
+  border:1px solid var(--accent-purple);
+  border-radius:8px;
+  padding:.65rem 1.2rem;
+  color:var(--text-primary);
+  font-size:.95rem;
+  outline:none;
+  box-shadow:0 0 12px rgba(123,47,255,.2);
+  transition:box-shadow .2s,border-color .2s;
+}
+#globalSearch:focus{
+  border-color:var(--accent-cyan);
+  box-shadow:0 0 20px rgba(0,245,255,.3);
+}
+#globalSearch::placeholder{color:var(--text-secondary);}
+
+/* ── SECTIONS ── */
+section{padding:3rem 2rem;max-width:1400px;margin:0 auto;}
+.section-title{
+  font-size:2rem;font-weight:700;letter-spacing:.06em;
+  margin-bottom:2rem;
+  color:var(--accent-cyan);
+  text-shadow:0 0 16px rgba(0,245,255,.5);
+  border-left:4px solid var(--accent-purple);
+  padding-left:1rem;
+}
+
+/* ── STATS ── */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:1.25rem;margin-bottom:2.5rem;
+}
+.stat-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  padding:1.5rem 1rem;
+  text-align:center;
+  position:relative;overflow:hidden;
+  transition:transform .25s,box-shadow .25s;
+}
+.stat-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,245,255,.04) 0%,rgba(123,47,255,.04) 100%);
+}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 0 24px rgba(0,245,255,.18);}
+.stat-icon{font-size:2rem;margin-bottom:.5rem;}
+.stat-number{
+  font-size:2.2rem;font-weight:800;
+  color:var(--accent-cyan);
+  text-shadow:0 0 10px rgba(0,245,255,.6);
+  line-height:1;
+}
+.stat-label{color:var(--text-secondary);font-size:.8rem;margin-top:.35rem;letter-spacing:.06em;text-transform:uppercase;}
+
+/* ── CHART ── */
+.chart-container{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  padding:1.5rem;
+  box-shadow:0 0 20px rgba(123,47,255,.1);
+  position:relative;
+}
+.chart-container h3{
+  color:var(--accent-purple);
+  margin-bottom:1rem;font-size:1.1rem;letter-spacing:.05em;
+  text-shadow:0 0 8px rgba(123,47,255,.5);
+}
+canvas{max-height:320px;}
+
+/* ── COUNTRY CARDS ── */
+.countries-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:1.25rem;
+}
+.country-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  padding:1.5rem 1rem;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+  position:relative;overflow:hidden;
+}
+.country-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,245,255,0) 0%,rgba(123,47,255,0) 100%);
+  transition:background .25s;
+}
+.country-card:hover{
+  transform:translateY(-6px);
+  border-color:var(--accent-cyan);
+  box-shadow:0 0 28px rgba(0,245,255,.25),0 8px 32px rgba(0,0,0,.4);
+}
+.country-card:hover::after{
+  background:linear-gradient(135deg,rgba(0,245,255,.04) 0%,rgba(123,47,255,.06) 100%);
+}
+.country-card.hidden{display:none;}
+.country-emoji{font-size:3rem;margin-bottom:.75rem;display:block;}
+.country-name{
+  font-size:1.15rem;font-weight:700;
+  color:var(--accent-cyan);
+  text-shadow:0 0 8px rgba(0,245,255,.4);
+  margin-bottom:.4rem;
+}
+.country-desc{color:var(--text-secondary);font-size:.8rem;line-height:1.5;}
+.card-btn{
+  margin-top:1rem;
+  background:linear-gradient(135deg,var(--accent-purple),var(--accent-cyan));
+  border:none;border-radius:6px;
+  color:#fff;font-size:.8rem;font-weight:600;
+  padding:.4rem 1rem;cursor:pointer;
+  letter-spacing:.04em;
+  transition:opacity .2s,box-shadow .2s;
+}
+.card-btn:hover{opacity:.85;box-shadow:0 0 14px rgba(0,245,255,.4);}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+  padding:1rem;
+}
+.modal-overlay.active{display:flex;}
+.modal-box{
+  background:var(--bg-secondary);
+  border:1px solid var(--accent-cyan);
+  border-radius:16px;
+  width:100%;max-width:760px;
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 0 50px rgba(0,245,255,.2),0 0 100px rgba(123,47,255,.1);
+  animation:modalIn .25s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 1.5rem;
+  border-bottom:1px solid var(--border-color);
+}
+.modal-title{
+  font-size:1.4rem;font-weight:700;
+  color:var(--accent-cyan);
+  text-shadow:0 0 10px rgba(0,245,255,.5);
+}
+.modal-close{
+  background:none;border:none;
+  color:var(--text-secondary);
+  font-size:1.6rem;cursor:pointer;line-height:1;
+  transition:color .2s;
+}
+.modal-close:hover{color:var(--accent-red);}
+.modal-tabs{
+  display:flex;gap:.25rem;
+  padding:.75rem 1.5rem 0;
+  border-bottom:1px solid var(--border-color);
+  flex-wrap:wrap;
+}
+.tab-btn{
+  background:none;border:none;
+  color:var(--text-secondary);
+  font-size:.875rem;font-weight:600;
+  padding:.5rem 1rem;
+  border-radius:6px 6px 0 0;
+  cursor:pointer;letter-spacing:.04em;
+  border-bottom:2px solid transparent;
+  transition:color .2s,border-color .2s;
+}
+.tab-btn.active{color:var(--accent-cyan);border-bottom-color:var(--accent-cyan);}
+.tab-btn:hover{color:var(--accent-cyan);}
+.modal-body{padding:1.5rem;overflow-y:auto;flex:1;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* modal inner lists */
+.period-list,.artifact-list,.museum-list,.gap-list{list-style:none;}
+.period-list li{
+  padding:.5rem .75rem;margin-bottom:.4rem;
+  border-left:3px solid var(--accent-purple);
+  background:rgba(123,47,255,.07);
+  border-radius:0 6px 6px 0;
+  font-size:.88rem;color:var(--text-primary);
+}
+.artifact-list li,.museum-list li{
+  padding:.6rem .75rem;margin-bottom:.4rem;
+  background:var(--bg-card);border-radius:8px;
+  border:1px solid var(--border-color);
+  font-size:.88rem;
+}
+.artifact-list li strong,.museum-list li strong{color:var(--accent-cyan);}
+.artifact-meta,.museum-meta{color:var(--text-secondary);font-size:.8rem;}
+.gap-item{
+  padding:.75rem 1rem;margin-bottom:.6rem;
+  background:var(--bg-card);border-radius:8px;
+  border:1px solid var(--border-color);
+  display:flex;align-items:flex-start;gap:.75rem;
+}
+.severity-badge{
+  flex-shrink:0;padding:.2rem .6rem;border-radius:12px;
+  font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+.sev-high{background:rgba(255,68,102,.15);color:var(--accent-red);border:1px solid var(--accent-red);}
+.sev-medium{background:rgba(255,204,0,.1);color:var(--accent-yellow);border:1px solid var(--accent-yellow);}
+.sev-low{background:rgba(0,255,136,.1);color:var(--accent-green);border:1px solid var(--accent-green);}
+.gap-text{font-size:.88rem;color:var(--text-primary);}
+
+/* ── ARTIFACTS ── */
+.filter-bar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem;}
+.filter-btn{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:20px;
+  color:var(--text-secondary);
+  font-size:.8rem;padding:.35rem .9rem;cursor:pointer;
+  transition:color .2s,border-color .2s,box-shadow .2s;
+}
+.filter-btn.active,.filter-btn:hover{
+  color:var(--accent-cyan);border-color:var(--accent-cyan);
+  box-shadow:0 0 10px rgba(0,245,255,.2);
+}
+.artifacts-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:1.1rem;
+}
+.artifact-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:10px;padding:1.1rem;
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  position:relative;
+}
+.artifact-card:hover{
+  transform:translateY(-4px);
+  border-color:var(--accent-purple);
+  box-shadow:0 0 20px rgba(123,47,255,.2);
+}
+.artifact-card.hidden{display:none;}
+.artifact-card-name{font-size:.95rem;font-weight:700;color:var(--text-primary);margin-bottom:.3rem;}
+.artifact-card-date{color:var(--accent-cyan);font-size:.8rem;margin-bottom:.2rem;}
+.artifact-card-loc{color:var(--text-secondary);font-size:.78rem;}
+.country-badge{
+  display:inline-block;margin-top:.55rem;
+  background:rgba(123,47,255,.15);
+  border:1px solid rgba(123,47,255,.4);
+  border-radius:12px;padding:.15rem .55rem;
+  color:var(--accent-purple);font-size:.72rem;font-weight:600;
+}
+
+/* ── MUSEUMS ── */
+.museums-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.1rem;
+}
+.museum-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:10px;padding:1.1rem;
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+}
+.museum-card:hover{
+  transform:translateY(-4px);
+  border-color:var(--accent-green);
+  box-shadow:0 0 20px rgba(0,255,136,.15);
+}
+.museum-card.hidden{display:none;}
+.museum-card-name{font-size:.95rem;font-weight:700;color:var(--text-primary);margin-bottom:.3rem;}
+.museum-card-city{color:var(--accent-green);font-size:.8rem;margin-bottom:.2rem;}
+.museum-badge{
+  display:inline-block;margin-top:.55rem;
+  background:rgba(0,255,136,.08);
+  border:1px solid rgba(0,255,136,.3);
+  border-radius:12px;padding:.15rem .55rem;
+  color:var(--accent-green);font-size:.72rem;font-weight:600;
+}
+
+/* ── RESEARCH GAPS ── */
+.gaps-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:1.1rem;
+}
+.gap-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:10px;padding:1.1rem;
+  transition:transform .22s,box-shadow .22s;
+}
+.gap-card:hover{transform:translateY(-3px);box-shadow:0 0 16px rgba(255,68,102,.1);}
+.gap-card-title{font-size:.92rem;font-weight:700;color:var(--text-primary);margin:.5rem 0 .3rem;}
+.gap-card-country{color:var(--text-secondary);font-size:.78rem;}
+
+/* ── BACKEND ── */
+.backend-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.25rem;
+}
+.backend-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:12px;padding:1.4rem;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+}
+.backend-card:hover{
+  transform:translateY(-5px);
+  border-color:var(--accent-purple);
+  box-shadow:0 0 28px rgba(123,47,255,.25);
+}
+.backend-lang-icon{font-size:2.4rem;margin-bottom:.5rem;}
+.backend-lang-name{font-size:1.15rem;font-weight:700;color:var(--accent-cyan);margin-bottom:.15rem;text-shadow:0 0 8px rgba(0,245,255,.3);}
+.backend-framework{
+  font-size:.78rem;color:var(--accent-purple);
+  font-weight:600;letter-spacing:.04em;margin-bottom:.5rem;
+}
+.backend-desc{font-size:.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:.85rem;}
+.code-block{
+  background:#0a0a0f;
+  border:1px solid var(--border-color);
+  border-radius:6px;padding:.55rem .85rem;
+  font-family:'Courier New',monospace;
+  font-size:.77rem;color:var(--accent-green);
+  white-space:pre;overflow-x:auto;
+}
+
+/* ── FADE-IN ── */
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease;}
+.fade-in.visible{opacity:1;transform:translateY(0);}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;
+  padding:2rem;
+  color:var(--text-secondary);
+  border-top:1px solid var(--border-color);
+  font-size:.85rem;
+  background:var(--bg-secondary);
+}
+footer span{color:var(--accent-cyan);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:0 1rem;}
+  .nav-links a{padding:.35rem .5rem;font-size:.78rem;}
+  section{padding:2rem 1rem;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
 </head>
 <body>
-    <header>
-        <h1>ChronoArchive: Explore Historical Wonders</h1>
-        <input type="text" id="searchBar" placeholder="Search for a country...">
-    </header>
-    
-    <main id="countryList">
-        <div class="country" id="country1">
-            <h2>Italy</h2>
-            <p>Explore Italy's rich history with artifacts and museums.</p>
-            <button onclick="openModal('italyModal')">More Info</button>
-        </div>
-        <div class="country" id="country2">
-            <h2>Egypt</h2>
-            <p>Discover the ancient civilization of Egypt.</p>
-            <button onclick="openModal('egyptModal')">More Info</button>
-        </div>
-        <!-- Add more countries as needed -->
-    </main>
 
-    <!-- Modal Structure -->
-    <div class="modal" id="italyModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('italyModal')">&times;</span>
-            <h2>Italy</h2>
-            <p>Detailed historical data about Italy...</p>
-        </div>
-    </div>
-    <div class="modal" id="egyptModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('egyptModal')">&times;</span>
-            <h2>Egypt</h2>
-            <p>Detailed historical data about Egypt...</p>
-        </div>
-    </div>
+<!-- ═══════════ NAV ═══════════ -->
+<nav>
+  <div class="nav-brand">Chrono<span>Archive</span></div>
+  <div class="nav-links">
+    <a href="#dashboard">Dashboard</a>
+    <a href="#countries">Countries</a>
+    <a href="#artifacts">Artifacts</a>
+    <a href="#museums">Museums</a>
+    <a href="#gaps">Research Gaps</a>
+    <a href="#backend">Backend</a>
+  </div>
+</nav>
 
-    <footer>
-        <p>ChronoArchive &copy; 2026</p>
-    </footer>
+<!-- ═══════════ GLOBAL SEARCH ═══════════ -->
+<div class="search-wrapper">
+  <input id="globalSearch" type="text" placeholder="🔍  Search countries, artifacts, museums…">
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<section id="dashboard">
+  <div class="section-title">Dashboard</div>
+  <div class="stats-grid">
+    <div class="stat-card fade-in">
+      <div class="stat-icon">🌍</div>
+      <div class="stat-number" data-target="10">0</div>
+      <div class="stat-label">Total Countries</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-icon">📅</div>
+      <div class="stat-number" data-target="50" data-suffix="+">0</div>
+      <div class="stat-label">Historical Periods</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-icon">🏺</div>
+      <div class="stat-number" data-target="35" data-suffix="+">0</div>
+      <div class="stat-label">Artifacts</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-icon">🏛️</div>
+      <div class="stat-number" data-target="30" data-suffix="+">0</div>
+      <div class="stat-label">Museums</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-icon">🔬</div>
+      <div class="stat-number" data-target="20" data-suffix="+">0</div>
+      <div class="stat-label">Research Gaps</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-icon">💻</div>
+      <div class="stat-number" data-target="10">0</div>
+      <div class="stat-label">Backend Languages</div>
+    </div>
+  </div>
+  <div class="chart-container fade-in">
+    <h3>📊 Historical Periods per Country</h3>
+    <canvas id="periodsChart"></canvas>
+  </div>
+</section>
+
+<!-- ═══════════ COUNTRIES ═══════════ -->
+<section id="countries">
+  <div class="section-title">Countries</div>
+  <div class="countries-grid" id="countriesGrid">
+    <!-- Cards injected by JS -->
+  </div>
+</section>
+
+<!-- ═══════════ ARTIFACTS ═══════════ -->
+<section id="artifacts">
+  <div class="section-title">Artifacts</div>
+  <div class="filter-bar" id="artifactFilters">
+    <button class="filter-btn active" data-filter="all">All</button>
+  </div>
+  <div class="artifacts-grid" id="artifactsGrid"></div>
+</section>
+
+<!-- ═══════════ MUSEUMS ═══════════ -->
+<section id="museums">
+  <div class="section-title">Museums</div>
+  <div class="museums-grid" id="museumsGrid"></div>
+</section>
+
+<!-- ═══════════ RESEARCH GAPS ═══════════ -->
+<section id="gaps">
+  <div class="section-title">Research Gaps</div>
+  <div class="gaps-grid" id="gapsGrid"></div>
+</section>
+
+<!-- ═══════════ BACKEND ═══════════ -->
+<section id="backend">
+  <div class="section-title">Backend Languages</div>
+  <div class="backend-grid" id="backendGrid"></div>
+</section>
+
+<footer>
+  <p><span>ChronoArchive</span> &copy; 2026 — Explore the wonders of human history</p>
+</footer>
+
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="modal-overlay" id="countryModal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-tabs" id="modalTabs"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════ */
+const COUNTRIES = [
+  {
+    id:'egypt', name:'Egypt', emoji:'🇪🇬',
+    desc:'Birthplace of one of the world\'s oldest civilizations along the Nile.',
+    periods:[
+      {name:'Pre-Dynastic', range:'5500–3100 BC'},
+      {name:'Early Dynastic', range:'3100–2686 BC'},
+      {name:'Old Kingdom', range:'2686–2181 BC', note:'Age of Pyramids'},
+      {name:'First Intermediate', range:'2181–2055 BC'},
+      {name:'Middle Kingdom', range:'2055–1650 BC'},
+      {name:'Second Intermediate', range:'1650–1550 BC'},
+      {name:'New Kingdom', range:'1550–1070 BC', note:'Age of Pharaohs'},
+      {name:'Third Intermediate', range:'1070–664 BC'},
+      {name:'Late Period', range:'664–332 BC'},
+      {name:'Ptolemaic', range:'332–30 BC'},
+    ],
+    artifacts:[
+      {name:'Great Pyramid of Giza', date:'2560 BC', location:'Giza Plateau'},
+      {name:'Rosetta Stone', date:'196 BC', location:'British Museum'},
+      {name:"Tutankhamun's Mask", date:'1323 BC', location:'Cairo Museum'},
+      {name:'Book of the Dead', date:'1550 BC', location:'Various museums'},
+      {name:'Narmer Palette', date:'3100 BC', location:'Cairo Museum'},
+    ],
+    museums:[
+      {name:'Egyptian Museum Cairo', city:'Cairo'},
+      {name:'Luxor Museum', city:'Luxor'},
+      {name:'Nubian Museum', city:'Aswan'},
+      {name:'British Museum Egyptian Gallery', city:'London'},
+    ],
+    gaps:[
+      {text:'Purpose of pyramid internal chambers', severity:'High'},
+      {text:'Lost Library of Alexandria contents', severity:'High'},
+      {text:'Pre-Dynastic writing systems', severity:'Medium'},
+      {text:'Mummy preservation chemical formulas', severity:'Medium'},
+    ],
+  },
+  {
+    id:'greece', name:'Greece', emoji:'🇬🇷',
+    desc:'Cradle of democracy, philosophy, and Western civilization.',
+    periods:[
+      {name:'Minoan', range:'3000–1100 BC'},
+      {name:'Mycenaean', range:'1600–1100 BC'},
+      {name:'Greek Dark Ages', range:'1100–800 BC'},
+      {name:'Archaic', range:'800–480 BC'},
+      {name:'Classical', range:'480–323 BC', note:'Golden Age'},
+      {name:'Hellenistic', range:'323–146 BC'},
+      {name:'Roman Greece', range:'146 BC–330 AD'},
+      {name:'Byzantine', range:'330–1453 AD'},
+    ],
+    artifacts:[
+      {name:'Parthenon Sculptures', date:'438 BC', location:'British Museum'},
+      {name:'Antikythera Mechanism', date:'100 BC', location:'Athens Museum'},
+      {name:'Venus de Milo', date:'130 BC', location:'Louvre'},
+      {name:'Winged Victory of Samothrace', date:'190 BC', location:'Louvre'},
+      {name:'Linear B Tablets', date:'1450 BC', location:'Various'},
+    ],
+    museums:[
+      {name:'National Archaeological Museum', city:'Athens'},
+      {name:'Acropolis Museum', city:'Athens'},
+      {name:'Archaeological Museum Thessaloniki', city:'Thessaloniki'},
+      {name:'Museum of Cycladic Art', city:'Athens'},
+    ],
+    gaps:[
+      {text:'Full translation of Linear A script', severity:'High'},
+      {text:'Lost works of Aristotle', severity:'High'},
+      {text:'Antikythera mechanism full functionality', severity:'Medium'},
+      {text:'Location of ancient Troy libraries', severity:'Low'},
+    ],
+  },
+  {
+    id:'rome', name:'Rome', emoji:'🇮🇹',
+    desc:'The eternal city that built an empire spanning three continents.',
+    periods:[
+      {name:'Regal Period', range:'753–509 BC'},
+      {name:'Roman Republic', range:'509–27 BC'},
+      {name:'Principate', range:'27 BC–284 AD', note:'Pax Romana'},
+      {name:'Crisis of the 3rd Century', range:'235–284 AD'},
+      {name:'Dominate', range:'284–476 AD'},
+      {name:'Western Fall', range:'476 AD'},
+      {name:'Byzantine continuation', range:'476–1453 AD'},
+    ],
+    artifacts:[
+      {name:'Colosseum', date:'70–80 AD', location:'Rome'},
+      {name:'Pantheon', date:'125 AD', location:'Rome'},
+      {name:"Trajan's Column", date:'113 AD', location:'Rome'},
+      {name:'Roman Concrete Formula', date:'Ancient', location:'Lost'},
+      {name:"Julius Caesar's Commentarii", date:'50 BC', location:'Various'},
+    ],
+    museums:[
+      {name:'Vatican Museums', city:'Rome'},
+      {name:'Roman National Museum', city:'Rome'},
+      {name:'Capitoline Museums', city:'Rome'},
+      {name:'British Museum Roman Gallery', city:'London'},
+    ],
+    gaps:[
+      {text:'Roman concrete exact formula', severity:'High'},
+      {text:'Underground Domus Aurea extent', severity:'High'},
+      {text:'Location of lost Legions standards', severity:'Medium'},
+      {text:"Caesar's full military records", severity:'Low'},
+    ],
+  },
+  {
+    id:'china', name:'China', emoji:'🇨🇳',
+    desc:'Ancient civilization spanning 4,000 years of continuous history.',
+    periods:[
+      {name:'Xia Dynasty', range:'2070–1600 BC'},
+      {name:'Shang Dynasty', range:'1600–1046 BC'},
+      {name:'Zhou Dynasty', range:'1046–256 BC'},
+      {name:'Qin Dynasty', range:'221–206 BC'},
+      {name:'Han Dynasty', range:'206 BC–220 AD'},
+      {name:'Three Kingdoms', range:'220–280 AD'},
+      {name:'Tang Dynasty', range:'618–907 AD', note:'Golden Age'},
+      {name:'Song Dynasty', range:'960–1279 AD'},
+      {name:'Ming Dynasty', range:'1368–1644 AD'},
+      {name:'Qing Dynasty', range:'1644–1912 AD'},
+    ],
+    artifacts:[
+      {name:'Terracotta Army', date:'210 BC', location:"Xi'an"},
+      {name:'Great Wall', date:'7th century BC+', location:'China'},
+      {name:'Oracle Bones', date:'1200 BC', location:'Various'},
+      {name:'Silk Road Manuscripts', date:'Various', location:'Dunhuang'},
+      {name:'Bronze Ritual Vessels', date:'1600 BC', location:'Various'},
+    ],
+    museums:[
+      {name:'Palace Museum (Forbidden City)', city:'Beijing'},
+      {name:'Shanghai Museum', city:'Shanghai'},
+      {name:'Shaanxi History Museum', city:"Xi'an"},
+      {name:'National Museum of China', city:'Beijing'},
+    ],
+    gaps:[
+      {text:'Xia Dynasty archaeological proof', severity:'High'},
+      {text:'Full extent of terracotta army', severity:'Medium'},
+      {text:'Lost Shang Dynasty texts', severity:'High'},
+      {text:'Ancient silk road trade routes details', severity:'Low'},
+    ],
+  },
+  {
+    id:'india', name:'India', emoji:'🇮🇳',
+    desc:'Home to the Indus Valley, one of the world\'s earliest urban civilizations.',
+    periods:[
+      {name:'Indus Valley', range:'3300–1300 BC'},
+      {name:'Vedic Period', range:'1500–500 BC'},
+      {name:'Mahajanapadas', range:'600–300 BC'},
+      {name:'Maurya Empire', range:'322–185 BC'},
+      {name:'Gupta Empire', range:'320–550 AD', note:'Golden Age'},
+      {name:'Medieval Kingdoms', range:'550–1200 AD'},
+      {name:'Delhi Sultanate', range:'1206–1526 AD'},
+      {name:'Mughal Empire', range:'1526–1857 AD'},
+      {name:'Colonial Period', range:'1757–1947 AD'},
+    ],
+    artifacts:[
+      {name:'Taj Mahal', date:'1653 AD', location:'Agra'},
+      {name:'Indus Seals', date:'2500 BC', location:'Various'},
+      {name:'Ashoka Pillars', date:'250 BC', location:'Various'},
+      {name:'Dancing Girl of Mohenjo-daro', date:'2500 BC', location:'National Museum'},
+      {name:'Iron Pillar of Delhi', date:'415 AD', location:'Delhi'},
+    ],
+    museums:[
+      {name:'National Museum', city:'New Delhi'},
+      {name:'Indian Museum', city:'Kolkata'},
+      {name:'Chhatrapati Shivaji Maharaj Museum', city:'Mumbai'},
+      {name:'Archaeological Museum Mohenjo-daro', city:'Sindh'},
+    ],
+    gaps:[
+      {text:'Indus Valley script decipherment', severity:'High'},
+      {text:'Cause of Indus Valley collapse', severity:'High'},
+      {text:'Vedic astronomical records completeness', severity:'Medium'},
+      {text:'Ancient Indian ocean trade networks', severity:'Medium'},
+    ],
+  },
+  {
+    id:'japan', name:'Japan', emoji:'🇯🇵',
+    desc:'Island nation with a rich samurai tradition and ancient Shinto culture.',
+    periods:[
+      {name:'Jomon Period', range:'14000–300 BC'},
+      {name:'Yayoi Period', range:'300 BC–300 AD'},
+      {name:'Kofun Period', range:'300–538 AD'},
+      {name:'Asuka Period', range:'538–710 AD'},
+      {name:'Nara Period', range:'710–794 AD'},
+      {name:'Heian Period', range:'794–1185 AD'},
+      {name:'Kamakura Shogunate', range:'1185–1333 AD'},
+      {name:'Muromachi Period', range:'1336–1573 AD'},
+      {name:'Edo Period', range:'1603–1868 AD'},
+      {name:'Meiji Restoration', range:'1868–1912 AD'},
+    ],
+    artifacts:[
+      {name:'Samurai Armor Collection', date:'Various', location:'Various museums'},
+      {name:'Shoso-in Treasures', date:'8th century', location:'Nara'},
+      {name:'Jomon Pottery', date:'14000 BC', location:'Tokyo Museum'},
+      {name:'Katana Blades', date:'Various', location:'Various'},
+      {name:'Zen Garden Ryoanji', date:'1450 AD', location:'Kyoto'},
+    ],
+    museums:[
+      {name:'Tokyo National Museum', city:'Tokyo'},
+      {name:'Kyoto National Museum', city:'Kyoto'},
+      {name:'Nara National Museum', city:'Nara'},
+      {name:'Osaka Museum of History', city:'Osaka'},
+    ],
+    gaps:[
+      {text:'Origins of Jomon people', severity:'High'},
+      {text:'Ancient Shinto ritual practices', severity:'Medium'},
+      {text:'Kofun burial customs details', severity:'Medium'},
+      {text:'Early Japanese-Korean relations', severity:'Low'},
+    ],
+  },
+  {
+    id:'mexico', name:'Mexico', emoji:'🇲🇽',
+    desc:'Land of the Maya, Aztec, and Olmec — Mesoamerica\'s great civilizations.',
+    periods:[
+      {name:'Paleo-Indian', range:'13000–7000 BC'},
+      {name:'Archaic', range:'7000–2000 BC'},
+      {name:'Olmec', range:'1500–400 BC'},
+      {name:'Teotihuacan', range:'100 BC–650 AD'},
+      {name:'Maya Classic', range:'250–900 AD'},
+      {name:'Toltec', range:'900–1150 AD'},
+      {name:'Aztec/Mexica', range:'1300–1521 AD'},
+      {name:'Colonial', range:'1521–1821 AD'},
+      {name:'Independence', range:'1821–present'},
+    ],
+    artifacts:[
+      {name:'Aztec Sun Stone', date:'1427 AD', location:'Mexico City'},
+      {name:'Temple of Kukulcan', date:'1000 AD', location:'Chichen Itza'},
+      {name:'Olmec Heads', date:'1200 BC', location:'Villahermosa'},
+      {name:'Maya Codices', date:'Various', location:'Various'},
+      {name:'Tlaloc Rain God Mask', date:'Various', location:'Mexico Museum'},
+    ],
+    museums:[
+      {name:'National Museum of Anthropology', city:'Mexico City'},
+      {name:'Templo Mayor Museum', city:'Mexico City'},
+      {name:'Museo Maya de Cancún', city:'Cancún'},
+      {name:'Frida Kahlo Museum', city:'Mexico City'},
+    ],
+    gaps:[
+      {text:'Maya collapse reasons', severity:'High'},
+      {text:'Olmec writing system', severity:'High'},
+      {text:'Teotihuacan rulers identity', severity:'Medium'},
+      {text:'Pre-Columbian trans-oceanic contacts', severity:'Low'},
+    ],
+  },
+  {
+    id:'mesopotamia', name:'Mesopotamia', emoji:'🌙',
+    desc:'Cradle of civilization — where writing, law, and cities were born.',
+    periods:[
+      {name:'Ubaid Period', range:'6500–3800 BC'},
+      {name:'Uruk Period', range:'4000–3100 BC', note:'First Cities'},
+      {name:'Early Dynastic', range:'2900–2350 BC'},
+      {name:'Akkadian Empire', range:'2350–2154 BC'},
+      {name:'Neo-Sumerian', range:'2112–2004 BC'},
+      {name:'Old Babylonian', range:'2004–1595 BC'},
+      {name:'Assyrian Empire', range:'911–612 BC'},
+      {name:'Neo-Babylonian', range:'626–539 BC'},
+      {name:'Achaemenid rule', range:'539–330 BC'},
+    ],
+    artifacts:[
+      {name:"Hammurabi's Code", date:'1754 BC', location:'Louvre'},
+      {name:'Standard of Ur', date:'2600 BC', location:'British Museum'},
+      {name:'Epic of Gilgamesh Tablets', date:'2100 BC', location:'British Museum'},
+      {name:'Ishtar Gate', date:'575 BC', location:'Pergamon Museum'},
+      {name:'Royal Tombs of Ur Jewelry', date:'2600 BC', location:'Various'},
+    ],
+    museums:[
+      {name:'Iraq Museum', city:'Baghdad'},
+      {name:'British Museum Mesopotamia Gallery', city:'London'},
+      {name:'Pergamon Museum', city:'Berlin'},
+      {name:'Oriental Institute', city:'Chicago'},
+    ],
+    gaps:[
+      {text:'Location of ancient Nippur archives', severity:'High'},
+      {text:'Sumerian origin and language family', severity:'High'},
+      {text:'Tower of Babel archaeological evidence', severity:'Medium'},
+      {text:'Pre-cuneiform writing systems', severity:'Medium'},
+    ],
+  },
+  {
+    id:'persia', name:'Persia', emoji:'🇮🇷',
+    desc:'Empire of Cyrus the Great — the world\'s first superpower.',
+    periods:[
+      {name:'Elamite Kingdom', range:'2700–539 BC'},
+      {name:'Median Empire', range:'678–550 BC'},
+      {name:'Achaemenid Empire', range:'550–330 BC', note:'First Persian Empire'},
+      {name:'Macedonian/Seleucid', range:'330–247 BC'},
+      {name:'Parthian Empire', range:'247 BC–224 AD'},
+      {name:'Sassanid Empire', range:'224–651 AD'},
+      {name:'Islamic Conquest', range:'637–1000 AD'},
+      {name:'Safavid Dynasty', range:'1501–1736 AD'},
+    ],
+    artifacts:[
+      {name:'Persepolis Reliefs', date:'518 BC', location:'Persepolis'},
+      {name:'Cyrus Cylinder', date:'539 BC', location:'British Museum'},
+      {name:'Darius Behistun Inscription', date:'520 BC', location:'Iran'},
+      {name:'Persian Royal Jewelry', date:'Various', location:'National Museum Iran'},
+      {name:'Sassanid Silver Plates', date:'Various', location:'Various'},
+    ],
+    museums:[
+      {name:'National Museum of Iran', city:'Tehran'},
+      {name:'Persepolis Archaeological Site Museum', city:'Persepolis'},
+      {name:'British Museum Persian Collection', city:'London'},
+      {name:'Metropolitan Museum Persian Art', city:'New York'},
+    ],
+    gaps:[
+      {text:'Avestan religious texts complete corpus', severity:'High'},
+      {text:'Ancient Persian trade route maps', severity:'Medium'},
+      {text:'Achaemenid palace construction methods', severity:'Medium'},
+      {text:'Pre-Zoroastrian Persian religion', severity:'High'},
+    ],
+  },
+  {
+    id:'arabia', name:'Arabia', emoji:'🇸🇦',
+    desc:'Land of spice routes, early astronomy, and the Islamic Golden Age.',
+    periods:[
+      {name:'Pre-Islamic Arabia', range:'3000 BC–610 AD'},
+      {name:'Nabataean Kingdom', range:'400 BC–106 AD'},
+      {name:'Himyarite Kingdom', range:'110 BC–525 AD'},
+      {name:'Islamic Golden Age', range:'622–1258 AD', note:'Rashidun, Umayyad, Abbasid'},
+      {name:'Fatimid Caliphate', range:'909–1171 AD'},
+      {name:'Crusader interactions', range:'1095–1291 AD'},
+      {name:'Ottoman Period', range:'1517–1918 AD'},
+      {name:'Modern Era', range:'1918–present'},
+    ],
+    artifacts:[
+      {name:'Kaaba', date:'Ancient', location:'Mecca'},
+      {name:'Nabataean Tomb Facades', date:'100 BC', location:'Petra'},
+      {name:'Arabian Astronomical Instruments', date:'9th century', location:'Various'},
+      {name:'Ancient Arabic Manuscripts', date:'Various', location:'Various'},
+      {name:'Al-Idrisi World Map', date:'1154 AD', location:'Various'},
+    ],
+    museums:[
+      {name:'National Museum of Saudi Arabia', city:'Riyadh'},
+      {name:'Jordan Museum', city:'Amman'},
+      {name:'Museum of Islamic Art', city:'Doha'},
+      {name:'Arab World Institute', city:'Paris'},
+    ],
+    gaps:[
+      {text:'Pre-Islamic Arabian writing systems', severity:'High'},
+      {text:'Ancient trade routes of incense road', severity:'Medium'},
+      {text:'Nabataean water engineering secrets', severity:'Medium'},
+      {text:'Early Islamic manuscript preservation', severity:'High'},
+    ],
+  },
+];
+
+const BACKEND_LANGS = [
+  {emoji:'🐍', name:'Python', framework:'Flask / Django', desc:'Versatile and readable. Ideal for rapid API development with powerful scientific and ML libraries.', cmd:'pip install flask && flask run'},
+  {emoji:'🟢', name:'Node.js', framework:'Express.js', desc:'Event-driven JavaScript runtime. Perfect for real-time applications and high-concurrency APIs.', cmd:'npm install express && node app.js'},
+  {emoji:'☕', name:'Java', framework:'Spring Boot', desc:'Enterprise-grade reliability. The backbone of large-scale distributed systems worldwide.', cmd:'mvn spring-boot:run'},
+  {emoji:'🔷', name:'C#', framework:'.NET Core', desc:'Microsoft\'s modern cross-platform framework with exceptional performance and tooling.', cmd:'dotnet run'},
+  {emoji:'🐹', name:'Go', framework:'Gin', desc:'Compiled, statically typed language built for speed. Excellent for microservices and CLIs.', cmd:'go run main.go'},
+  {emoji:'💎', name:'Ruby', framework:'Rails', desc:'Convention over configuration. Beloved for developer happiness and rapid prototyping.', cmd:'rails server'},
+  {emoji:'🐘', name:'PHP', framework:'Laravel', desc:'The web\'s most popular server-side language with elegant syntax and rich ecosystem.', cmd:'php artisan serve'},
+  {emoji:'🔵', name:'TypeScript', framework:'NestJS', desc:'Typed superset of JavaScript providing structured, scalable server-side architecture.', cmd:'npm run start:dev'},
+  {emoji:'🦀', name:'Rust', framework:'Actix-web', desc:'Memory-safe systems language delivering C++ speed with modern ergonomics.', cmd:'cargo run'},
+  {emoji:'🎯', name:'Kotlin', framework:'Ktor', desc:'Modern JVM language by JetBrains. Concise, safe, and interoperable with Java.', cmd:'./gradlew run'},
+];
+
+/* ═══════════════════════════════════════════════════
+   RENDER HELPERS
+═══════════════════════════════════════════════════ */
+function sevClass(s){ return s==='High'?'sev-high':s==='Medium'?'sev-medium':'sev-low'; }
+
+/* ═══════════════════════════════════════════════════
+   BUILD COUNTRY CARDS
+═══════════════════════════════════════════════════ */
+function buildCountries(){
+  const grid = document.getElementById('countriesGrid');
+  grid.innerHTML = COUNTRIES.map(c=>`
+    <div class="country-card fade-in" data-country="${c.id}" data-name="${c.name.toLowerCase()}">
+      <span class="country-emoji">${c.emoji}</span>
+      <div class="country-name">${c.name}</div>
+      <div class="country-desc">${c.desc}</div>
+      <button class="card-btn" onclick="openCountryModal('${c.id}')">Explore →</button>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD ARTIFACTS
+═══════════════════════════════════════════════════ */
+function buildArtifacts(){
+  const filterBar = document.getElementById('artifactFilters');
+  const grid = document.getElementById('artifactsGrid');
+  // filter buttons
+  const countryBtns = COUNTRIES.map(c=>`
+    <button class="filter-btn" data-filter="${c.id}">${c.emoji} ${c.name}</button>
+  `).join('');
+  filterBar.innerHTML = `<button class="filter-btn active" data-filter="all">All</button>${countryBtns}`;
+  // cards
+  grid.innerHTML = COUNTRIES.flatMap(c=>
+    c.artifacts.map(a=>`
+      <div class="artifact-card fade-in" data-country="${c.id}" data-name="${a.name.toLowerCase()}">
+        <div class="artifact-card-name">${a.name}</div>
+        <div class="artifact-card-date">📅 ${a.date}</div>
+        <div class="artifact-card-loc">📍 ${a.location}</div>
+        <span class="country-badge">${c.emoji} ${c.name}</span>
+      </div>
+    `)
+  ).join('');
+  // filter logic
+  filterBar.addEventListener('click',e=>{
+    const btn = e.target.closest('.filter-btn');
+    if(!btn) return;
+    filterBar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    grid.querySelectorAll('.artifact-card').forEach(card=>{
+      card.classList.toggle('hidden', f!=='all' && card.dataset.country!==f);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD MUSEUMS
+═══════════════════════════════════════════════════ */
+function buildMuseums(){
+  const grid = document.getElementById('museumsGrid');
+  grid.innerHTML = COUNTRIES.flatMap(c=>
+    c.museums.map(m=>`
+      <div class="museum-card fade-in" data-country="${c.id}" data-name="${m.name.toLowerCase()}">
+        <div class="museum-card-name">🏛️ ${m.name}</div>
+        <div class="museum-card-city">📍 ${m.city}</div>
+        <span class="museum-badge">${c.emoji} ${c.name}</span>
+      </div>
+    `)
+  ).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD RESEARCH GAPS
+═══════════════════════════════════════════════════ */
+function buildGaps(){
+  const grid = document.getElementById('gapsGrid');
+  grid.innerHTML = COUNTRIES.flatMap(c=>
+    c.gaps.map(g=>`
+      <div class="gap-card fade-in">
+        <span class="severity-badge ${sevClass(g.severity)}">${g.severity}</span>
+        <div class="gap-card-title">${g.text}</div>
+        <div class="gap-card-country">${c.emoji} ${c.name}</div>
+      </div>
+    `)
+  ).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD BACKEND
+═══════════════════════════════════════════════════ */
+function buildBackend(){
+  const grid = document.getElementById('backendGrid');
+  grid.innerHTML = BACKEND_LANGS.map(l=>`
+    <div class="backend-card fade-in">
+      <div class="backend-lang-icon">${l.emoji}</div>
+      <div class="backend-lang-name">${l.name}</div>
+      <div class="backend-framework">${l.framework}</div>
+      <div class="backend-desc">${l.desc}</div>
+      <div class="code-block">${l.cmd}</div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   CHART
+═══════════════════════════════════════════════════ */
+function buildChart(){
+  const ctx = document.getElementById('periodsChart').getContext('2d');
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels: COUNTRIES.map(c=>`${c.emoji} ${c.name}`),
+      datasets:[{
+        label:'Historical Periods',
+        data: COUNTRIES.map(c=>c.periods.length),
+        backgroundColor: COUNTRIES.map((_,i)=>`hsla(${180+i*18},100%,60%,.55)`),
+        borderColor: COUNTRIES.map((_,i)=>`hsla(${180+i*18},100%,70%,1)`),
+        borderWidth:1,
+        borderRadius:6,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#111827',
+          titleColor:'#00f5ff',
+          bodyColor:'#94a3b8',
+          borderColor:'#1e293b',
+          borderWidth:1,
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'#94a3b8',font:{size:11}},
+          grid:{color:'rgba(30,41,59,.6)'},
+        },
+        y:{
+          beginAtZero:true,
+          ticks:{color:'#94a3b8',stepSize:2},
+          grid:{color:'rgba(30,41,59,.6)'},
+        }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+function openCountryModal(id){
+  const c = COUNTRIES.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('modalTitle').textContent = `${c.emoji}  ${c.name}`;
+
+  const tabs = ['Periods','Artifacts','Museums','Research Gaps'];
+  document.getElementById('modalTabs').innerHTML = tabs.map((t,i)=>
+    `<button class="tab-btn${i===0?' active':''}" data-tab="${i}">${t}</button>`
+  ).join('');
+
+  const periodsHTML = `<ul class="period-list">${c.periods.map(p=>
+    `<li><strong>${p.name}</strong> <span style="color:var(--text-secondary)">(${p.range})</span>${p.note?` — <em style="color:var(--accent-green)">${p.note}</em>`:''}</li>`
+  ).join('')}</ul>`;
+
+  const artifactsHTML = `<ul class="artifact-list">${c.artifacts.map(a=>
+    `<li><strong>${a.name}</strong><div class="artifact-meta">📅 ${a.date} &nbsp;|&nbsp; 📍 ${a.location}</div></li>`
+  ).join('')}</ul>`;
+
+  const museumsHTML = `<ul class="museum-list">${c.museums.map(m=>
+    `<li><strong>${m.name}</strong><div class="museum-meta">📍 ${m.city}</div></li>`
+  ).join('')}</ul>`;
+
+  const gapsHTML = c.gaps.map(g=>
+    `<div class="gap-item"><span class="severity-badge ${sevClass(g.severity)}">${g.severity}</span><div class="gap-text">${g.text}</div></div>`
+  ).join('');
+
+  const bodies = [periodsHTML, artifactsHTML, museumsHTML, gapsHTML];
+  document.getElementById('modalBody').innerHTML = tabs.map((t,i)=>
+    `<div class="tab-content${i===0?' active':''}" data-tab="${i}">${bodies[i]}</div>`
+  ).join('');
+
+  document.getElementById('modalTabs').addEventListener('click',e=>{
+    const btn = e.target.closest('.tab-btn');
+    if(!btn) return;
+    const ti = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`.tab-content[data-tab="${ti}"]`).classList.add('active');
+  });
+
+  document.getElementById('countryModal').classList.add('active');
+}
+
+document.getElementById('modalClose').addEventListener('click',()=>{
+  document.getElementById('countryModal').classList.remove('active');
+});
+document.getElementById('countryModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('countryModal'))
+    document.getElementById('countryModal').classList.remove('active');
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.getElementById('countryModal').classList.remove('active');
+});
+
+/* ═══════════════════════════════════════════════════
+   COUNTER ANIMATION
+═══════════════════════════════════════════════════ */
+function animateCounter(el){
+  const target = +el.dataset.target;
+  const suffix = el.dataset.suffix||'';
+  const dur = 1200;
+  const start = performance.now();
+  function step(now){
+    const p = Math.min((now-start)/dur,1);
+    const ease = 1-Math.pow(1-p,3);
+    el.textContent = Math.round(ease*target)+suffix;
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ═══════════════════════════════════════════════════
+   INTERSECTION OBSERVER
+═══════════════════════════════════════════════════ */
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('visible');
+      // trigger counters when stat cards appear
+      const num = entry.target.querySelector('.stat-number');
+      if(num && !num.dataset.counted){
+        num.dataset.counted = '1';
+        animateCounter(num);
+      }
+      observer.unobserve(entry.target);
+    }
+  });
+},{threshold:0.12});
+
+function observeAll(){
+  document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+}
+
+/* ═══════════════════════════════════════════════════
+   GLOBAL SEARCH
+═══════════════════════════════════════════════════ */
+document.getElementById('globalSearch').addEventListener('input',function(){
+  const q = this.value.toLowerCase().trim();
+
+  // countries
+  document.querySelectorAll('.country-card').forEach(card=>{
+    card.classList.toggle('hidden', q!=='' && !card.dataset.name.includes(q));
+  });
+  // artifacts
+  document.querySelectorAll('.artifact-card').forEach(card=>{
+    const match = card.dataset.name.includes(q) || card.dataset.country.includes(q);
+    card.classList.toggle('hidden', q!=='' && !match);
+  });
+  // museums
+  document.querySelectorAll('.museum-card').forEach(card=>{
+    const match = card.dataset.name.includes(q) || card.dataset.country.includes(q);
+    card.classList.toggle('hidden', q!=='' && !match);
+  });
+
+  // reset artifact filter buttons when searching
+  if(q!==''){
+    document.querySelectorAll('#artifactFilters .filter-btn').forEach(b=>b.classList.remove('active'));
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+buildCountries();
+buildArtifacts();
+buildMuseums();
+buildGaps();
+buildBackend();
+buildChart();
+observeAll();
+</script>
 </body>
 </html>
