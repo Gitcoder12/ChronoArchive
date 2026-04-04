@@ -555,26 +555,38 @@
                     <h2>${c.name}</h2>
                     <p>${c.description}</p>
                     <div>${c.tags.map(t => `<span class="badge">${t}</span>`).join('')}</div>
-                    <button onclick="openCountryModal('${c.id}')">View Details</button>
+                    <button data-action="open-modal" data-id="${c.id}">View Details</button>
                 `;
                 grid.appendChild(card);
             });
         }
 
         /* ══════════════════════════════════════
-           SEARCH
+           COUNTRY CARD EVENT DELEGATION
         ══════════════════════════════════════ */
+        document.getElementById('countryGrid').addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-action="open-modal"]');
+            if (btn) openCountryModal(btn.dataset.id);
+        });
+
+        /* ══════════════════════════════════════
+           SEARCH (debounced)
+        ══════════════════════════════════════ */
+        let searchTimer;
         document.getElementById('searchBar').addEventListener('input', function () {
-            const q = this.value.toLowerCase().trim();
-            if (!q) { renderCountries(countriesData); return; }
-            const filtered = countriesData.filter(c =>
-                c.name.toLowerCase().includes(q) ||
-                c.description.toLowerCase().includes(q) ||
-                c.tags.some(t => t.toLowerCase().includes(q))
-            );
-            renderCountries(filtered);
-            // Switch to countries tab for search results
-            switchTab('countries');
+            clearTimeout(searchTimer);
+            const raw = this.value;
+            searchTimer = setTimeout(function () {
+                const q = raw.toLowerCase().trim();
+                if (!q) { renderCountries(countriesData); return; }
+                const filtered = countriesData.filter(c =>
+                    c.name.toLowerCase().includes(q) ||
+                    c.description.toLowerCase().includes(q) ||
+                    c.tags.some(t => t.toLowerCase().includes(q))
+                );
+                renderCountries(filtered);
+                switchTab('countries');
+            }, 200);
         });
 
         /* ══════════════════════════════════════
