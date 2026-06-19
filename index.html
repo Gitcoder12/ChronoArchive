@@ -4,47 +4,469 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChronoArchive</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file for styling -->
-    <script src="script.js" defer></script> <!-- Link to a JS file for interactivity -->
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #e2b96f;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        #searchBar {
+            width: 100%;
+            max-width: 480px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 24px;
+            font-size: 1rem;
+            background-color: #0f3460;
+            color: #e0e0e0;
+            outline: 2px solid #e2b96f;
+        }
+
+        #searchBar::placeholder {
+            color: #aaa;
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+            padding: 36px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .country {
+            background-color: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .country:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(226, 185, 111, 0.15);
+        }
+
+        .country h2 {
+            font-size: 1.3rem;
+            color: #e2b96f;
+        }
+
+        .country p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #c0c0c0;
+            flex: 1;
+        }
+
+        .country button {
+            align-self: flex-start;
+            padding: 8px 18px;
+            background-color: #e2b96f;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .country button:hover {
+            background-color: #c9a256;
+        }
+
+        .country.hidden {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #16213e;
+            border: 1px solid #e2b96f;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 560px;
+            width: 90%;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #e2b96f;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-content p,
+        .modal-content li {
+            color: #c0c0c0;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .modal-content strong {
+            color: #e2b96f;
+        }
+
+        .close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-size: 1.6rem;
+            color: #e2b96f;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #0f3460;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>ChronoArchive: Explore Historical Wonders</h1>
-        <input type="text" id="searchBar" placeholder="Search for a country...">
+        <input type="text" id="searchBar" placeholder="Search for a country..." oninput="filterCountries(this.value)">
     </header>
-    
+
     <main id="countryList">
-        <div class="country" id="country1">
-            <h2>Italy</h2>
-            <p>Explore Italy's rich history with artifacts and museums.</p>
-            <button onclick="openModal('italyModal')">More Info</button>
-        </div>
-        <div class="country" id="country2">
+        <div class="country" data-name="egypt">
             <h2>Egypt</h2>
-            <p>Discover the ancient civilization of Egypt.</p>
+            <p>Discover the ancient civilization of Egypt — from the Pharaohs and pyramids to the Ptolemaic era.</p>
             <button onclick="openModal('egyptModal')">More Info</button>
         </div>
-        <!-- Add more countries as needed -->
+        <div class="country" data-name="greece">
+            <h2>Greece</h2>
+            <p>Explore the birthplace of democracy, philosophy, and the Olympic Games in ancient Greece.</p>
+            <button onclick="openModal('greeceModal')">More Info</button>
+        </div>
+        <div class="country" data-name="china">
+            <h2>China</h2>
+            <p>Journey through millennia of Chinese dynasties, inventions, and the Silk Road trade network.</p>
+            <button onclick="openModal('chinaModal')">More Info</button>
+        </div>
+        <div class="country" data-name="india">
+            <h2>India</h2>
+            <p>Uncover the Indus Valley Civilisation, Mughal Empire, and India's vast cultural heritage.</p>
+            <button onclick="openModal('indiaModal')">More Info</button>
+        </div>
+        <div class="country" data-name="italy">
+            <h2>Italy</h2>
+            <p>Explore Italy's rich history — from the Roman Empire to the Renaissance and beyond.</p>
+            <button onclick="openModal('italyModal')">More Info</button>
+        </div>
+        <div class="country" data-name="france">
+            <h2>France</h2>
+            <p>Trace France's history from the Gauls and Charlemagne to the French Revolution and Napoleon.</p>
+            <button onclick="openModal('franceModal')">More Info</button>
+        </div>
+        <div class="country" data-name="united kingdom">
+            <h2>United Kingdom</h2>
+            <p>From Stonehenge and the Anglo-Saxons to the British Empire and the Industrial Revolution.</p>
+            <button onclick="openModal('ukModal')">More Info</button>
+        </div>
+        <div class="country" data-name="japan">
+            <h2>Japan</h2>
+            <p>Explore Japan's samurai era, feudal shogunates, and remarkable modernisation during the Meiji period.</p>
+            <button onclick="openModal('japanModal')">More Info</button>
+        </div>
+        <div class="country" data-name="iraq mesopotamia">
+            <h2>Iraq (Mesopotamia)</h2>
+            <p>Discover the cradle of civilization — Sumer, Akkad, Babylon, and the world's first writing system.</p>
+            <button onclick="openModal('iraqModal')">More Info</button>
+        </div>
+        <div class="country" data-name="mexico">
+            <h2>Mexico</h2>
+            <p>Explore the Olmec, Maya, and Aztec civilisations and their enduring cultural legacy.</p>
+            <button onclick="openModal('mexicoModal')">More Info</button>
+        </div>
+        <div class="country" data-name="peru">
+            <h2>Peru</h2>
+            <p>Discover the Inca Empire, Machu Picchu, and the rich pre-Columbian heritage of South America.</p>
+            <button onclick="openModal('peruModal')">More Info</button>
+        </div>
+        <div class="country" data-name="turkey">
+            <h2>Turkey</h2>
+            <p>From the Hittites and Byzantine Empire to the height of the Ottoman civilisation.</p>
+            <button onclick="openModal('turkeyModal')">More Info</button>
+        </div>
     </main>
 
-    <!-- Modal Structure -->
-    <div class="modal" id="italyModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('italyModal')">&times;</span>
-            <h2>Italy</h2>
-            <p>Detailed historical data about Italy...</p>
-        </div>
-    </div>
-    <div class="modal" id="egyptModal" style="display:none;">
+    <!-- Modals -->
+    <div class="modal" id="egyptModal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('egyptModal')">&times;</span>
             <h2>Egypt</h2>
-            <p>Detailed historical data about Egypt...</p>
+            <p><strong>Timeline:</strong> Ancient → Ptolemaic → Roman → Islamic → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Egyptian Museum (Cairo), Grand Egyptian Museum</li>
+                <li><strong>Notable Artifacts:</strong> Rosetta Stone (British Museum), Tutankhamun's mask</li>
+                <li><strong>Key Periods:</strong> Old Kingdom (~2686 BCE), New Kingdom (~1550 BCE), Ptolemaic Dynasty (323–30 BCE)</li>
+                <li><strong>Gap Detection:</strong> Under-documented transitional periods between dynasties</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="greeceModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('greeceModal')">&times;</span>
+            <h2>Greece</h2>
+            <p><strong>Timeline:</strong> Minoan → Mycenaean → Classical → Hellenistic → Byzantine → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> National Archaeological Museum (Athens), Acropolis Museum</li>
+                <li><strong>Notable Artifacts:</strong> Elgin Marbles (British Museum), Antikythera Mechanism</li>
+                <li><strong>Key Periods:</strong> Classical Greece (~500–323 BCE), Hellenistic Era (323–31 BCE)</li>
+                <li><strong>Gap Detection:</strong> Greek Dark Ages (~1100–800 BCE) remain sparsely documented</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="chinaModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('chinaModal')">&times;</span>
+            <h2>China</h2>
+            <p><strong>Timeline:</strong> Shang → Zhou → Qin → Han → Tang → Song → Ming → Qing → Republic → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Palace Museum (Forbidden City), National Museum of China</li>
+                <li><strong>Notable Artifacts:</strong> Terracotta Army, Bronze Vessels of the Shang Dynasty</li>
+                <li><strong>Key Periods:</strong> Qin unification (221 BCE), Tang golden age (618–907 CE), Mongol Yuan dynasty (1271–1368)</li>
+                <li><strong>Gap Detection:</strong> Limited records survive from pre-Shang periods</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="indiaModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('indiaModal')">&times;</span>
+            <h2>India</h2>
+            <p><strong>Timeline:</strong> Indus Valley → Vedic → Maurya → Gupta → Mughal → Colonial → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> National Museum (New Delhi), Indian Museum (Kolkata)</li>
+                <li><strong>Notable Artifacts:</strong> Ashoka Pillar, Ellora cave sculptures</li>
+                <li><strong>Key Periods:</strong> Indus Valley (~2500 BCE), Maurya Empire (322–185 BCE), Mughal Empire (1526–1857)</li>
+                <li><strong>Gap Detection:</strong> Post-Indus collapse period (~1900–1500 BCE) is poorly understood</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="italyModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('italyModal')">&times;</span>
+            <h2>Italy</h2>
+            <p><strong>Timeline:</strong> Etruscan → Roman Republic → Roman Empire → Medieval → Renaissance → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Vatican Museums, Uffizi Gallery (Florence), Colosseum</li>
+                <li><strong>Notable Artifacts:</strong> Laocoön Group, Capitoline Wolf, Venus de Milo (origin debated)</li>
+                <li><strong>Key Periods:</strong> Roman Republic (509–27 BCE), Roman Empire (27 BCE–476 CE), Renaissance (14th–17th century)</li>
+                <li><strong>Gap Detection:</strong> Early medieval Italy (476–800 CE) has significant documentation gaps</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="franceModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('franceModal')">&times;</span>
+            <h2>France</h2>
+            <p><strong>Timeline:</strong> Gauls → Roman Gaul → Frankish Kingdom → Medieval → Revolution → Republic → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Louvre Museum, Musée d'Orsay, Palace of Versailles</li>
+                <li><strong>Notable Artifacts:</strong> Winged Victory of Samothrace, Code of Hammurabi (Louvre)</li>
+                <li><strong>Key Periods:</strong> Carolingian Empire (800 CE), French Revolution (1789), Napoleonic Era (1799–1815)</li>
+                <li><strong>Gap Detection:</strong> Merovingian dynasty records are fragmentary</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="ukModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('ukModal')">&times;</span>
+            <h2>United Kingdom</h2>
+            <p><strong>Timeline:</strong> Prehistoric → Roman Britain → Anglo-Saxon → Norman → Tudor → Empire → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> British Museum, Victoria and Albert Museum, National Museum of Scotland</li>
+                <li><strong>Notable Artifacts:</strong> Sutton Hoo Helmet, Lindow Man, Magna Carta</li>
+                <li><strong>Key Periods:</strong> Norman Conquest (1066), Elizabethan Era (1558–1603), British Empire peak (19th century)</li>
+                <li><strong>Gap Detection:</strong> Pre-Roman Celtic oral traditions are largely undocumented in writing</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="japanModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('japanModal')">&times;</span>
+            <h2>Japan</h2>
+            <p><strong>Timeline:</strong> Jōmon → Yayoi → Kofun → Nara → Heian → Feudal → Edo → Meiji → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Tokyo National Museum, Kyoto National Museum</li>
+                <li><strong>Notable Artifacts:</strong> Dotaku bronze bells, Haniwa terracotta figures</li>
+                <li><strong>Key Periods:</strong> Heian Era (794–1185 CE), Edo Period (1603–1868), Meiji Restoration (1868)</li>
+                <li><strong>Gap Detection:</strong> Jōmon to Yayoi transition is an active area of archaeological research</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="iraqModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('iraqModal')">&times;</span>
+            <h2>Iraq (Mesopotamia)</h2>
+            <p><strong>Timeline:</strong> Ubaid → Sumerian → Akkadian → Babylonian → Assyrian → Persian → Islamic → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Iraq Museum (Baghdad), British Museum (Mesopotamian collection)</li>
+                <li><strong>Notable Artifacts:</strong> Standard of Ur, Ishtar Gate, Epic of Gilgamesh tablets</li>
+                <li><strong>Key Periods:</strong> Sumerian city-states (~3500 BCE), Babylonian Empire (~1894–539 BCE), Assyrian Empire (~900–612 BCE)</li>
+                <li><strong>Gap Detection:</strong> Many cuneiform records remain untranslated or lost to looting</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="mexicoModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('mexicoModal')">&times;</span>
+            <h2>Mexico</h2>
+            <p><strong>Timeline:</strong> Olmec → Maya → Teotihuacan → Toltec → Aztec → Colonial → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> National Museum of Anthropology (Mexico City), Templo Mayor Museum</li>
+                <li><strong>Notable Artifacts:</strong> Aztec Sun Stone, Olmec Colossal Heads</li>
+                <li><strong>Key Periods:</strong> Olmec (~1500–400 BCE), Teotihuacan (~1–650 CE), Aztec Empire (1428–1521)</li>
+                <li><strong>Gap Detection:</strong> The collapse of Teotihuacan (~650 CE) is not fully explained</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="peruModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('peruModal')">&times;</span>
+            <h2>Peru</h2>
+            <p><strong>Timeline:</strong> Norte Chico → Chavín → Moche → Wari → Tiwanaku → Inca → Colonial → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Larco Museum (Lima), Machu Picchu Site Museum</li>
+                <li><strong>Notable Artifacts:</strong> Nazca Lines, Inca gold figurines, quipus (knotted records)</li>
+                <li><strong>Key Periods:</strong> Norte Chico civilisation (~3000 BCE), Inca Empire (1438–1533 CE)</li>
+                <li><strong>Gap Detection:</strong> Intermediate Period (~600–900 CE) is underrepresented in records</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="turkeyModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('turkeyModal')">&times;</span>
+            <h2>Turkey</h2>
+            <p><strong>Timeline:</strong> Hittite → Phrygian → Lydian → Persian → Hellenistic → Roman → Byzantine → Ottoman → Modern</p>
+            <ul>
+                <li><strong>Museums:</strong> Topkapi Palace Museum, Museum of Anatolian Civilizations (Ankara)</li>
+                <li><strong>Notable Artifacts:</strong> Hittite lion sculptures, Byzantine mosaics of Hagia Sophia</li>
+                <li><strong>Key Periods:</strong> Hittite Empire (~1600–1180 BCE), Byzantine Empire (330–1453 CE), Ottoman Empire (1299–1922)</li>
+                <li><strong>Gap Detection:</strong> The post-Hittite collapse period (~1180–900 BCE) has significant gaps</li>
+            </ul>
         </div>
     </div>
 
     <footer>
         <p>ChronoArchive &copy; 2026</p>
     </footer>
+
+    <script>
+        function openModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('open');
+            }
+        }
+
+        function closeModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('open');
+            }
+        }
+
+        function filterCountries(query) {
+            var cards = document.querySelectorAll('.country');
+            var q = query.toLowerCase().trim();
+            cards.forEach(function(card) {
+                var name = card.getAttribute('data-name') || '';
+                if (name.includes(q)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Close modal when clicking outside modal-content
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('open');
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.open').forEach(function(m) {
+                    m.classList.remove('open');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
