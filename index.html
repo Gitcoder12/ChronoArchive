@@ -4,47 +4,567 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChronoArchive</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file for styling -->
-    <script src="script.js" defer></script> <!-- Link to a JS file for interactivity -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ── Reset & base ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(135deg, #161b22 0%, #1f2937 100%);
+            border-bottom: 1px solid #30363d;
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f0c040;
+            flex: 1 1 auto;
+        }
+
+        header h1 span { color: #58a6ff; }
+
+        #searchBar {
+            flex: 0 1 280px;
+            padding: 0.55rem 1rem;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            background: #0d1117;
+            color: #e6edf3;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #searchBar:focus { border-color: #58a6ff; }
+
+        /* ── Section headings ── */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f0c040;
+            margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #30363d;
+        }
+
+        /* ── Country grid ── */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #countryList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .country {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .country:hover {
+            border-color: #58a6ff;
+            transform: translateY(-3px);
+        }
+
+        .country h2 {
+            font-size: 1.05rem;
+            color: #58a6ff;
+        }
+
+        .country p {
+            font-size: 0.88rem;
+            color: #8b949e;
+            flex: 1;
+        }
+
+        .country button {
+            align-self: flex-start;
+            margin-top: 0.4rem;
+            padding: 0.4rem 1rem;
+            background: #238636;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .country button:hover { background: #2ea043; }
+
+        /* ── Timeline chart section ── */
+        #timelineSection {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 1.4rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #timelineChart { max-height: 320px; }
+
+        /* ── Gap detection section ── */
+        #gapSection {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 1.4rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #gapList {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        #gapList li {
+            background: #0d1117;
+            border-left: 3px solid #f0c040;
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+
+        #gapList li strong { color: #e6edf3; }
+
+        /* ── Modal ── */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open { display: flex; }
+
+        .modal-content {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 540px;
+            width: 90%;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #58a6ff;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .modal-content h3 {
+            color: #f0c040;
+            font-size: 0.95rem;
+            margin: 1rem 0 0.4rem;
+        }
+
+        .modal-content p, .modal-content li {
+            font-size: 0.9rem;
+            color: #8b949e;
+            line-height: 1.6;
+        }
+
+        .modal-content ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .close {
+            position: absolute;
+            top: 0.8rem;
+            right: 1rem;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #8b949e;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close:hover { color: #e6edf3; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 1rem 2rem;
+            font-size: 0.85rem;
+            color: #484f58;
+            border-top: 1px solid #21262d;
+        }
+
+        /* ── Responsive tweaks ── */
+        @media (max-width: 600px) {
+            header { flex-direction: column; align-items: stretch; }
+            header h1 { font-size: 1.2rem; }
+            #searchBar { flex: 1 1 auto; }
+        }
+    </style>
 </head>
 <body>
+
     <header>
-        <h1>ChronoArchive: Explore Historical Wonders</h1>
-        <input type="text" id="searchBar" placeholder="Search for a country...">
+        <h1><span>Chrono</span>Archive: Explore Historical Wonders</h1>
+        <input type="text" id="searchBar" placeholder="Search for a country…" aria-label="Search for a country">
     </header>
-    
-    <main id="countryList">
-        <div class="country" id="country1">
-            <h2>Italy</h2>
-            <p>Explore Italy's rich history with artifacts and museums.</p>
-            <button onclick="openModal('italyModal')">More Info</button>
+
+    <main>
+        <p class="section-title">Country Explorer</p>
+        <div id="countryList">
+            <div class="country" id="country-egypt">
+                <h2>Egypt</h2>
+                <p>Discover the ancient civilization of Egypt — pyramids, pharaohs, and millennia of recorded history.</p>
+                <button onclick="openModal('egyptModal')">More Info</button>
+            </div>
+            <div class="country" id="country-italy">
+                <h2>Italy</h2>
+                <p>Explore Italy's rich legacy from the Roman Empire to the Renaissance and beyond.</p>
+                <button onclick="openModal('italyModal')">More Info</button>
+            </div>
+            <div class="country" id="country-china">
+                <h2>China</h2>
+                <p>Journey through five thousand years of Chinese dynasties, philosophy, and invention.</p>
+                <button onclick="openModal('chinaModal')">More Info</button>
+            </div>
+            <div class="country" id="country-greece">
+                <h2>Greece</h2>
+                <p>Trace the birthplace of democracy, philosophy, and the Olympic Games.</p>
+                <button onclick="openModal('greeceModal')">More Info</button>
+            </div>
+            <div class="country" id="country-india">
+                <h2>India</h2>
+                <p>Uncover the subcontinent's vast heritage — from the Indus Valley to the Mughal Empire.</p>
+                <button onclick="openModal('indiaModal')">More Info</button>
+            </div>
+            <div class="country" id="country-mexico">
+                <h2>Mexico</h2>
+                <p>Explore the Aztec, Maya, and other Mesoamerican civilizations that shaped the Americas.</p>
+                <button onclick="openModal('mexicoModal')">More Info</button>
+            </div>
         </div>
-        <div class="country" id="country2">
-            <h2>Egypt</h2>
-            <p>Discover the ancient civilization of Egypt.</p>
-            <button onclick="openModal('egyptModal')">More Info</button>
-        </div>
-        <!-- Add more countries as needed -->
+
+        <!-- Timeline chart -->
+        <section id="timelineSection">
+            <p class="section-title">Chronological Timeline (Documented Events per Era)</p>
+            <canvas id="timelineChart" aria-label="Historical events timeline chart" role="img"></canvas>
+        </section>
+
+        <!-- Gap detection -->
+        <section id="gapSection">
+            <p class="section-title">Gap Detection — Under-Documented Periods</p>
+            <ul id="gapList">
+                <li><strong>Egypt — Intermediate Periods:</strong> Multiple transitional dynasties remain poorly documented due to limited surviving records.</li>
+                <li><strong>China — Five Dynasties and Ten Kingdoms (907–960 CE):</strong> Fragmented rule resulted in sparse cross-regional historical accounts.</li>
+                <li><strong>India — Post-Gupta Era (550–700 CE):</strong> Regional fragmentation led to inconsistent record-keeping across kingdoms.</li>
+                <li><strong>Greece — Greek Dark Ages (1100–800 BCE):</strong> Collapse of Bronze Age palace culture created a gap in written records.</li>
+                <li><strong>Italy — Migration Period (376–568 CE):</strong> Disruption of Roman administration produced incomplete administrative records.</li>
+                <li><strong>Mexico — Pre-Classic to Classic transition (~250 CE):</strong> Limited surviving codices leave aspects of early Maya history unclear.</li>
+            </ul>
+        </section>
     </main>
 
-    <!-- Modal Structure -->
-    <div class="modal" id="italyModal" style="display:none;">
+    <!-- Egypt Modal -->
+    <div class="modal" id="egyptModal" role="dialog" aria-modal="true" aria-labelledby="egyptTitle">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('italyModal')">&times;</span>
-            <h2>Italy</h2>
-            <p>Detailed historical data about Italy...</p>
+            <span class="close" onclick="closeModal('egyptModal')" aria-label="Close">&times;</span>
+            <h2 id="egyptTitle">Egypt</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>Egyptian Museum, Cairo</li>
+                <li>Luxor Museum</li>
+                <li>Grand Egyptian Museum (Giza)</li>
+            </ul>
+            <h3>Notable Artifacts Abroad</h3>
+            <ul>
+                <li>Rosetta Stone — British Museum, London</li>
+                <li>Bust of Nefertiti — Neues Museum, Berlin</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Ancient Egypt (3100 BCE) → Old Kingdom → Middle Kingdom → New Kingdom → Ptolemaic Period → Roman Egypt → Modern Egypt</p>
+            <h3>Gap Detection</h3>
+            <p>Under-documented transitional periods between major kingdoms, especially the three Intermediate Periods.</p>
         </div>
     </div>
-    <div class="modal" id="egyptModal" style="display:none;">
+
+    <!-- Italy Modal -->
+    <div class="modal" id="italyModal" role="dialog" aria-modal="true" aria-labelledby="italyTitle">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('egyptModal')">&times;</span>
-            <h2>Egypt</h2>
-            <p>Detailed historical data about Egypt...</p>
+            <span class="close" onclick="closeModal('italyModal')" aria-label="Close">&times;</span>
+            <h2 id="italyTitle">Italy</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>Vatican Museums, Rome</li>
+                <li>Uffizi Gallery, Florence</li>
+                <li>National Archaeological Museum, Naples</li>
+            </ul>
+            <h3>Notable Artifacts</h3>
+            <ul>
+                <li>Laocoön and His Sons — Vatican Museums</li>
+                <li>The Birth of Venus — Uffizi Gallery</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Ancient Rome (753 BCE) → Roman Republic → Roman Empire → Migration Period → Medieval Italy → Renaissance → Unification (1861) → Modern Italy</p>
+            <h3>Gap Detection</h3>
+            <p>Records from the Migration Period (376–568 CE) are sparse due to administrative disruption following the fall of the Western Roman Empire.</p>
+        </div>
+    </div>
+
+    <!-- China Modal -->
+    <div class="modal" id="chinaModal" role="dialog" aria-modal="true" aria-labelledby="chinaTitle">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('chinaModal')" aria-label="Close">&times;</span>
+            <h2 id="chinaTitle">China</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>National Museum of China, Beijing</li>
+                <li>Palace Museum (Forbidden City)</li>
+                <li>Shaanxi History Museum, Xi'an</li>
+            </ul>
+            <h3>Notable Artifacts</h3>
+            <ul>
+                <li>Terracotta Army — Emperor Qin Shi Huang's Mausoleum</li>
+                <li>Jade Burial Suits — multiple museums</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Xia Dynasty (~2070 BCE) → Shang → Zhou → Qin → Han → Three Kingdoms → Tang → Song → Yuan → Ming → Qing → Republic → People's Republic (1949–present)</p>
+            <h3>Gap Detection</h3>
+            <p>The Five Dynasties and Ten Kingdoms period (907–960 CE) is under-represented in cross-regional records.</p>
+        </div>
+    </div>
+
+    <!-- Greece Modal -->
+    <div class="modal" id="greeceModal" role="dialog" aria-modal="true" aria-labelledby="greeceTitle">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('greeceModal')" aria-label="Close">&times;</span>
+            <h2 id="greeceTitle">Greece</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>National Archaeological Museum, Athens</li>
+                <li>Acropolis Museum</li>
+                <li>Museum of Cycladic Art</li>
+            </ul>
+            <h3>Notable Artifacts</h3>
+            <ul>
+                <li>Antikythera Mechanism — National Archaeological Museum</li>
+                <li>Elgin Marbles — British Museum (contested)</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Minoan Civilization (~3000 BCE) → Mycenaean → Dark Ages → Archaic Period → Classical Period → Hellenistic → Roman → Byzantine → Modern Greece (1821–present)</p>
+            <h3>Gap Detection</h3>
+            <p>The Greek Dark Ages (1100–800 BCE) saw a sharp decline in literacy and written records after the collapse of Mycenaean palace culture.</p>
+        </div>
+    </div>
+
+    <!-- India Modal -->
+    <div class="modal" id="indiaModal" role="dialog" aria-modal="true" aria-labelledby="indiaTitle">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('indiaModal')" aria-label="Close">&times;</span>
+            <h2 id="indiaTitle">India</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>National Museum, New Delhi</li>
+                <li>Indian Museum, Kolkata</li>
+                <li>Chhatrapati Shivaji Maharaj Vastu Sangrahalaya, Mumbai</li>
+            </ul>
+            <h3>Notable Artifacts</h3>
+            <ul>
+                <li>Dancing Girl of Mohenjo-daro — National Museum, New Delhi</li>
+                <li>Ashoka Pillar edicts — various locations</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Indus Valley Civilization (~3300 BCE) → Vedic Period → Maurya → Gupta → Post-Gupta fragmentation → Delhi Sultanate → Mughal Empire → British Raj → Independence (1947–present)</p>
+            <h3>Gap Detection</h3>
+            <p>The post-Gupta era (550–700 CE) is inconsistently documented due to fragmentation across numerous competing regional kingdoms.</p>
+        </div>
+    </div>
+
+    <!-- Mexico Modal -->
+    <div class="modal" id="mexicoModal" role="dialog" aria-modal="true" aria-labelledby="mexicoTitle">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('mexicoModal')" aria-label="Close">&times;</span>
+            <h2 id="mexicoTitle">Mexico</h2>
+            <h3>Museums</h3>
+            <ul>
+                <li>National Museum of Anthropology, Mexico City</li>
+                <li>Templo Mayor Museum</li>
+                <li>Palenque Site Museum</li>
+            </ul>
+            <h3>Notable Artifacts</h3>
+            <ul>
+                <li>Aztec Sun Stone — National Museum of Anthropology</li>
+                <li>Olmec Colossal Heads — various sites</li>
+            </ul>
+            <h3>Timeline</h3>
+            <p>Olmec (~1500 BCE) → Maya Classic Period → Teotihuacan → Toltec → Aztec Empire → Spanish Conquest (1521) → Colonial Period → Independence (1821) → Modern Mexico</p>
+            <h3>Gap Detection</h3>
+            <p>The Pre-Classic to Classic Maya transition (~250 CE) is poorly understood due to limited surviving codices — most were destroyed during the Spanish conquest.</p>
         </div>
     </div>
 
     <footer>
-        <p>ChronoArchive &copy; 2026</p>
+        <p>ChronoArchive &copy; 2026 &mdash; Organizing cultural heritage into structured timelines.</p>
     </footer>
+
+    <script>
+        /* ─────────────────────────────────────────────
+           Search / filter country cards
+        ───────────────────────────────────────────── */
+        document.getElementById('searchBar').addEventListener('input', function () {
+            const query = this.value.trim().toLowerCase();
+            document.querySelectorAll('#countryList .country').forEach(function (card) {
+                const name = card.querySelector('h2').textContent.toLowerCase();
+                card.style.display = name.includes(query) ? '' : 'none';
+            });
+        });
+
+        /* ─────────────────────────────────────────────
+           Modal helpers
+        ───────────────────────────────────────────── */
+        function openModal(id) {
+            var modal = document.getElementById(id);
+            if (modal) { modal.classList.add('open'); }
+        }
+
+        function closeModal(id) {
+            var modal = document.getElementById(id);
+            if (modal) { modal.classList.remove('open'); }
+        }
+
+        // Close modal when clicking backdrop
+        document.querySelectorAll('.modal').forEach(function (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) { modal.classList.remove('open'); }
+            });
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.open').forEach(function (modal) {
+                    modal.classList.remove('open');
+                });
+            }
+        });
+
+        /* ─────────────────────────────────────────────
+           Chart.js — Chronological Timeline
+        ───────────────────────────────────────────── */
+        (function () {
+            var ctx = document.getElementById('timelineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Ancient Era\n(3000–500 BCE)',
+                        'Classical Era\n(500 BCE–500 CE)',
+                        'Medieval Era\n(500–1400 CE)',
+                        'Early Modern\n(1400–1800 CE)',
+                        'Modern Era\n(1800 CE–present)'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Egypt',
+                            data: [95, 70, 40, 30, 60],
+                            backgroundColor: 'rgba(240,192,64,0.75)'
+                        },
+                        {
+                            label: 'Italy',
+                            data: [55, 90, 65, 88, 80],
+                            backgroundColor: 'rgba(88,166,255,0.75)'
+                        },
+                        {
+                            label: 'China',
+                            data: [80, 85, 90, 78, 85],
+                            backgroundColor: 'rgba(63,185,80,0.75)'
+                        },
+                        {
+                            label: 'Greece',
+                            data: [60, 95, 50, 40, 55],
+                            backgroundColor: 'rgba(248,81,73,0.75)'
+                        },
+                        {
+                            label: 'India',
+                            data: [75, 80, 60, 70, 82],
+                            backgroundColor: 'rgba(188,140,255,0.75)'
+                        },
+                        {
+                            label: 'Mexico',
+                            data: [65, 72, 68, 45, 70],
+                            backgroundColor: 'rgba(255,123,58,0.75)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e6edf3', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y + ' documented events';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#8b949e' },
+                            grid: { color: '#21262d' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Documented Events (relative index)',
+                                color: '#8b949e'
+                            },
+                            ticks: { color: '#8b949e' },
+                            grid: { color: '#21262d' }
+                        }
+                    }
+                }
+            });
+        }());
+    </script>
 </body>
 </html>
