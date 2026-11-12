@@ -1,50 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoArchive</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file for styling -->
-    <script src="script.js" defer></script> <!-- Link to a JS file for interactivity -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Browse sample cultural heritage entries in ChronoArchive.">
+  <title>ChronoArchive — Historical Explorer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202b38;
+      --muted: #637083;
+      --paper: #f4f1e9;
+      --card: #fffefa;
+      --accent: #9a5b35;
+      --line: #e5dfd2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    header {
+      padding: 2.75rem max(1.25rem, calc((100vw - 960px) / 2));
+      background: #263747; color: white;
+    }
+    header p { max-width: 620px; color: #d7e0e6; margin-bottom: 1.4rem; }
+    h1 { margin: 0 0 .6rem; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; }
+    .search {
+      width: min(100%, 480px); padding: .85rem 1rem; border: 1px solid #9eabb5;
+      border-radius: 10px; font: inherit;
+    }
+    main { width: min(960px, calc(100% - 2rem)); margin: 2rem auto 4rem; }
+    .section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; }
+    .section-heading p { color: var(--muted); font-size: .9rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem; }
+    .country {
+      padding: 1.25rem; background:var(--card); border:1px solid var(--line);
+      border-radius:14px; box-shadow:0 8px 24px rgba(35,42,48,.04);
+    }
+    .country h2 { margin:.2rem 0 .4rem; }
+    .country p { color:var(--muted); min-height:3.2rem; }
+    button {
+      border:0; border-radius:8px; padding:.7rem 1rem; background:var(--accent);
+      color:white; font:inherit; cursor:pointer;
+    }
+    button:hover { filter:brightness(.92); }
+    button:focus-visible, input:focus-visible { outline:3px solid #d7a16f; outline-offset:2px; }
+    dialog {
+      max-width:min(520px, calc(100% - 2rem)); border:1px solid var(--line);
+      border-radius:14px; padding:1.5rem; color:var(--ink);
+    }
+    dialog::backdrop { background:rgba(18,27,36,.62); }
+    .dialog-head { display:flex; justify-content:space-between; align-items:start; gap:1rem; }
+    .dialog-head h2 { margin:0; }
+    .close { background:#e9e4d9; color:var(--ink); padding:.45rem .7rem; }
+    .empty { display:none; color:var(--muted); padding:1.5rem; background:var(--card); border-radius:12px; }
+    footer { text-align:center; color:var(--muted); border-top:1px solid var(--line); padding:1.5rem; font-size:.85rem; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>ChronoArchive: Explore Historical Wonders</h1>
-        <input type="text" id="searchBar" placeholder="Search for a country...">
-    </header>
-    
-    <main id="countryList">
-        <div class="country" id="country1">
-            <h2>Italy</h2>
-            <p>Explore Italy's rich history with artifacts and museums.</p>
-            <button onclick="openModal('italyModal')">More Info</button>
-        </div>
-        <div class="country" id="country2">
-            <h2>Egypt</h2>
-            <p>Discover the ancient civilization of Egypt.</p>
-            <button onclick="openModal('egyptModal')">More Info</button>
-        </div>
-        <!-- Add more countries as needed -->
-    </main>
+  <header>
+    <h1>ChronoArchive</h1>
+    <p>Explore sample cultural heritage entries and discover how places, artifacts, and historical timelines could connect.</p>
+    <label for="searchBar">Find a country</label><br>
+    <input class="search" type="search" id="searchBar" placeholder="Search Italy, Egypt…" autocomplete="off">
+  </header>
 
-    <!-- Modal Structure -->
-    <div class="modal" id="italyModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('italyModal')">&times;</span>
-            <h2>Italy</h2>
-            <p>Detailed historical data about Italy...</p>
-        </div>
+  <main>
+    <div class="section-heading">
+      <h2>Featured countries</h2>
+      <p id="resultCount" aria-live="polite">2 sample entries</p>
     </div>
-    <div class="modal" id="egyptModal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('egyptModal')">&times;</span>
-            <h2>Egypt</h2>
-            <p>Detailed historical data about Egypt...</p>
-        </div>
-    </div>
+    <section class="grid" id="countryList" aria-label="Country entries">
+      <article class="country" data-search="italy italian roman renaissance">
+        <h2>Italy</h2>
+        <p>Explore a sample entry about Italian history, museums, and cultural heritage.</p>
+        <button type="button" data-dialog="italyDialog">View entry</button>
+      </article>
+      <article class="country" data-search="egypt egyptian ancient nile">
+        <h2>Egypt</h2>
+        <p>Explore a sample entry about ancient Egypt and its historical collections.</p>
+        <button type="button" data-dialog="egyptDialog">View entry</button>
+      </article>
+    </section>
+    <p class="empty" id="emptyState">No sample entries match that search.</p>
+  </main>
 
-    <footer>
-        <p>ChronoArchive &copy; 2026</p>
-    </footer>
+  <dialog id="italyDialog" aria-labelledby="italyTitle">
+    <div class="dialog-head"><h2 id="italyTitle">Italy</h2><button class="close" type="button" data-close>Close</button></div>
+    <p>This is illustrative placeholder content for an Italy heritage record. Verified institutions, artifacts, dates, and sources have not yet been connected.</p>
+  </dialog>
+  <dialog id="egyptDialog" aria-labelledby="egyptTitle">
+    <div class="dialog-head"><h2 id="egyptTitle">Egypt</h2><button class="close" type="button" data-close>Close</button></div>
+    <p>This is illustrative placeholder content for an Egypt heritage record. Verified institutions, artifacts, dates, and sources have not yet been connected.</p>
+  </dialog>
+
+  <footer>ChronoArchive · Early-stage prototype</footer>
+
+  <script>
+    const search = document.getElementById("searchBar");
+    const cards = [...document.querySelectorAll(".country")];
+    const count = document.getElementById("resultCount");
+    const empty = document.getElementById("emptyState");
+
+    search.addEventListener("input", () => {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+      for (const card of cards) {
+        const match = (card.dataset.search + " " + card.textContent).toLowerCase().includes(query);
+        card.hidden = !match;
+        if (match) visible += 1;
+      }
+      count.textContent = visible + (visible === 1 ? " sample entry" : " sample entries");
+      empty.style.display = visible ? "none" : "block";
+    });
+
+    document.querySelectorAll("[data-dialog]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.getElementById(button.dataset.dialog).showModal();
+      });
+    });
+    document.querySelectorAll("[data-close]").forEach((button) => {
+      button.addEventListener("click", () => button.closest("dialog").close());
+    });
+    document.querySelectorAll("dialog").forEach((dialog) => {
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+    });
+  </script>
 </body>
 </html>
