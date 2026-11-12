@@ -1,1 +1,19 @@
-{\n  "name": "chronoarchive",\n  "version": "1.0.0",\n  "description": "A time management application.",\n  "main": "index.js",\n  "scripts": {\n    "test": "echo 'Error: no test specified' && exit 1",\n    "start": "node index.js"\n  },\n  "dependencies": {\n    "express": "^4.17.1",\n    "cors": "^2.8.5"\n  },\n  "devDependencies": {\n    "nodemon": "^2.0.7"\n  },\n  "author": "Gitcoder12",\n  "license": "ISC"\n}
+{
+  "name": "chronoarchive",
+  "version": "1.0.0",
+  "description": "Early-stage cultural heritage exploration prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "author": "Gitcoder12",
+  "license": "ISC"
+}
