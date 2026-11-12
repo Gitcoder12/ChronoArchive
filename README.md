@@ -1,109 +1,57 @@
 # ChronoArchive
 
-ChronoArchive is a global platform that organizes cultural heritage into structured timelines, integrating museums, libraries, artifacts, and historical records while identifying gaps in documented history.
+**A prototype for exploring cultural heritage records through countries, artifacts, and timelines.**
 
----
+[![License](https://img.shields.io/badge/license-see%20LICENSE-lightgrey)](LICENSE)
 
-## Overview
+ChronoArchive is an early-stage digital-heritage concept. The repository contains a static HTML exploration page and a small Express API skeleton for country, timeline, artifact, museum, and historical-gap endpoints.
 
-ChronoArchive is designed to provide a unified and chronological view of global history. The platform allows users to explore heritage data by country, track artifacts across the world, and understand historical progression through structured timelines.
+## Features in the Current Prototype
 
-In addition to aggregation, the system highlights missing or under-documented periods, supporting research and historical analysis.
-
----
-
-## Core Features
-
-* Country-based exploration of heritage data
-* Museum and library discovery
-* Artifact origin and global location tracking
-* Access to books and historical records
-* Chronological timeline of events
-* Detection of missing or under-documented history
-
----
-
-## System Modules
-
-### 1. Country Explorer
-
-Browse historical and cultural data by country, including institutions and archives.
-
-### 2. Artifact Mapping
-
-Track artifacts by origin and their current global locations.
-
-### 3. Knowledge Integration
-
-Access books, research papers, and documented materials related to each region.
-
-### 4. Chronological Timeline
-
-View ordered historical events from ancient to modern periods.
-
-### 5. Gap Detection
-
-Identify missing, incomplete, or underrepresented historical periods.
-
----
-
-## Example
-
-Country: Egypt
-
-* Museums: Egyptian Museum
-* Artifacts Abroad: Rosetta Stone (British Museum)
-* Timeline: Ancient → Ptolemaic → Roman → Modern
-* Gap Detection: Under-documented transitional periods
-
----
+- Static country cards and example detail dialogs.
+- Express endpoints for countries, timelines, artifacts, and museums.
+- A placeholder gap-detection endpoint.
+- Clear separation between the browser page and API server.
 
 ## Tech Stack
 
-* Frontend: HTML, CSS, JavaScript
-* Backend (planned): Python / Node.js
-* Data Sources (planned): Open museum datasets, research archives
+HTML · CSS · JavaScript · Node.js · Express · CORS
 
----
+## Quick Start
 
-## Future Enhancements
-
-* Interactive global map
-* AI-based historical summarization
-* Timeline visualization tools
-* Research recommendation system
-* Crowd-sourced contributions
-
----
-
-## Research Potential
-
-ChronoArchive can be extended into research areas such as:
-
-* Digital humanities
-* Cultural data integration
-* Historical gap analysis
-* Knowledge representation systems
-
----
-
-## Installation
+Install the server dependencies:
 
 ```bash
-git clone https://github.com/your-username/chronoarchive.git
-cd chronoarchive
+git clone https://github.com/Gitcoder12/ChronoArchive.git
+cd ChronoArchive
+npm install
+node server.js
 ```
 
-Open `index.html` in your browser.
+The API listens on `http://localhost:5000` by default.
 
----
+For the static page, serve the repository root with a local HTTP server in a second terminal:
 
-## Author
+```bash
+python -m http.server 8000
+```
 
-Dharavath Satvik
+Then open `http://localhost:8000`.
 
----
+## API Endpoints
+
+| Method | Endpoint | Current behavior |
+|---|---|---|
+| GET | `/api/countries` | Returns the in-memory country array |
+| GET | `/api/timelines` | Returns the in-memory timeline array |
+| GET | `/api/artifacts` | Returns the in-memory artifact array |
+| GET | `/api/museums` | Returns the in-memory museum array |
+| GET | `/api/gaps` | Calls a placeholder that currently returns an empty list |
+
+## Scope and Limitations
+
+The API arrays are currently empty and are not connected to an archive or museum data source. The gap-detection function is a stub. The static page contains example content; it is not a complete or verified cultural-heritage catalogue. The npm package's original start script pointed to a missing `index.js`; use `node server.js` for the committed API server.
 
 ## License
 
-MIT License
+See [LICENSE](LICENSE).
