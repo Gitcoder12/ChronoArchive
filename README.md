@@ -1,85 +1,122 @@
 # ChronoArchive
 
-**A prototype for exploring cultural heritage records through countries, artifacts, and timelines.**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-ChronoArchive is an early-stage digital-heritage concept. The repository contains a self-contained static HTML exploration page and a small Express API skeleton for country, timeline, artifact, museum, and historical-gap endpoints.
-
-## Features in the Current Prototype
-
-- Search and filter the two bundled sample country cards.
-- Open example detail dialogs for Italy and Egypt.
-- Express endpoints for countries, timelines, artifacts, and museums.
-- A placeholder gap-detection endpoint.
-
-## Tech Stack
-
-HTML · CSS · Vanilla JavaScript · Node.js · Express · CORS
-
-## Quick Start
-
-Install the server dependencies and start the API:
-
-```bash
-git clone https://github.com/Gitcoder12/ChronoArchive.git
-cd ChronoArchive
-npm install
-npm start
-```
-
-The API listens on `http://localhost:5000` by default. Check the server syntax with:
-
-```bash
-npm run check
-```
-
-To open the static browser demo, serve the repository root in a second terminal:
-
-```bash
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
-
-## API Endpoints
-
-| Method | Endpoint | Current behavior |
-|---|---|---|
-| GET | `/api/countries` | Returns the in-memory country array |
-| GET | `/api/timelines` | Returns the in-memory timeline array |
-| GET | `/api/artifacts` | Returns the in-memory artifact array |
-| GET | `/api/museums` | Returns the in-memory museum array |
-| GET | `/api/gaps` | Calls a placeholder that currently returns an empty list |
-
-## Scope and Limitations
-
-The API arrays are currently empty and are not connected to an archive or museum data source. The gap-detection function is a stub. The static page contains two illustrative country entries; it is not a complete or verified cultural-heritage catalogue. Browser content and API responses are not yet connected.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+ChronoArchive is a global platform that organizes cultural heritage into structured timelines, integrating museums, libraries, artifacts, and historical records while identifying gaps in documented history.
 
 ---
 
-## Project handbook
+## Overview
 
-- [Activity log](ACTIVITY_LOG.md)
-- [Feature upgrade plan](FEATURE_UPGRADE_PLAN.md)
-- [Company and team fit](COMPANY_FIT.md)
-- [Beginner and technical README draft](README_ADDENDUM_DRAFT.md)
-- [README quality checklist](README_QUALITY_CHECKLIST.md)
-- [Contributing](CONTRIBUTING.md)
-- [Agent instructions](AGENTS.md) · [Agent skills](SKILLS.md)
+ChronoArchive is designed to provide a unified and chronological view of global history. The platform allows users to explore heritage data by country, track artifacts across the world, and understand historical progression through structured timelines.
 
-## Understanding the project
+In addition to aggregation, the system highlights missing or under-documented periods, supporting research and historical analysis.
 
-### In plain language
+---
 
-A digital heritage prototype that lets visitors explore example countries, historical artefacts and timelines.
+## Core Features
 
-### Technical and research view
+* Country-based exploration of heritage data
+* Museum and library discovery
+* Artifact origin and global location tracking
+* Access to books and historical records
+* Chronological timeline of events
+* Detection of missing or under-documented history
 
-Static HTML/CSS/JavaScript interface with an Express API skeleton for country, timeline, artifact, museum and historical-gap endpoints. The current sample contains a small set of example records; the gap endpoint is a placeholder and is not a validated historical inference system.
+---
 
-See [FEATURE_UPGRADE_PLAN.md](FEATURE_UPGRADE_PLAN.md), [ACTIVITY_LOG.md](ACTIVITY_LOG.md), [COMPANY_FIT.md](COMPANY_FIT.md) and [CONTRIBUTING.md](CONTRIBUTING.md) for technical depth and collaboration details.
+## System Modules
+
+### 1. Country Explorer
+
+Browse historical and cultural data by country, including institutions and archives.
+
+### 2. Artifact Mapping
+
+Track artifacts by origin and their current global locations.
+
+### 3. Knowledge Integration
+
+Access books, research papers, and documented materials related to each region.
+
+### 4. Chronological Timeline
+
+View ordered historical events from ancient to modern periods.
+
+### 5. Gap Detection
+
+Identify missing, incomplete, or underrepresented historical periods.
+
+---
+
+## Example
+
+Country: Egypt
+
+* Museums: Egyptian Museum
+* Artifacts Abroad: Rosetta Stone (British Museum)
+* Timeline: Ancient → Ptolemaic → Roman → Modern
+* Gap Detection: Under-documented transitional periods
+
+---
+
+## Tech Stack
+
+* Frontend: HTML, CSS, JavaScript
+* Backend (planned): Python / Node.js
+* Data Sources (planned): Open museum datasets, research archives
+
+---
+
+## Future Enhancements
+
+* Interactive global map
+* AI-based historical summarization
+* Timeline visualization tools
+* Research recommendation system
+* Crowd-sourced contributions
+
+---
+
+## Research Potential
+
+ChronoArchive can be extended into research areas such as:
+
+* Digital humanities
+* Cultural data integration
+* Historical gap analysis
+* Knowledge representation systems
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/your-username/chronoarchive.git
+cd chronoarchive
+```
+
+Open `index.html` in your browser.
+
+---
+
+## Author
+
+Dharavath Satvik
+
+---
+
+## License
+
+MIT License
+
+
+---
+
+## AI-maintained project notes (secondary — 2026-11-13)
+
+This section supplements the maintainer-authored README above. The original text has been restored verbatim from Git-history baseline `eaa483a9b150c416d968d8828b7ff3ae60939065`; this addendum does not replace or certify the original claims.
+
+- The source tree, runtime data and tests are the implementation source of truth. Roadmap items, draft PRs and AI-generated descriptions are not shipped features by themselves.
+- Preserve existing maintainer-provided data. Never replace real data with synthetic or placeholder records. Clearly label and isolate test fixtures.
+- Mark unverified sources, IDs, records, metrics and external claims as unknown/unverified instead of guessing.
+- Verify setup, execution, test commands and public claims against the exact current commit before using this project in a job, research or academic application.
+- See [MODEL_AUDIT_ROUTER.md](MODEL_AUDIT_ROUTER.md) for the independent model review and merge gate.
