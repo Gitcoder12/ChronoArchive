@@ -120,3 +120,21 @@ This section supplements the maintainer-authored README above. The original text
 - Mark unverified sources, IDs, records, metrics and external claims as unknown/unverified instead of guessing.
 - Verify setup, execution, test commands and public claims against the exact current commit before using this project in a job, research or academic application.
 - See [MODEL_AUDIT_ROUTER.md](MODEL_AUDIT_ROUTER.md) for the independent model review and merge gate.
+
+---
+
+## Engineering Audit & Handover — 2026-11-17
+
+**Review scope:** default branch `main`; static inspection of `server.js`. Runtime tests were not executed.
+
+### Confirmed findings
+- The `countries`, `timelines`, `artifacts`, and `museums` datasets are initialized as empty arrays in `server.js`; the corresponding GET endpoints therefore return empty arrays.
+- `detectGaps()` currently returns `[]` unconditionally. The `/api/gaps` endpoint does not perform historical gap detection yet.
+- The README describes broader historical discovery capabilities than this inspected server currently implements.
+
+### Next actions
+1. Add a documented, sourced data-ingestion layer and define data provenance.
+2. Implement gap detection with explicit rules and representative fixtures.
+3. Add API tests for empty, populated, and malformed datasets; document which features are implemented versus planned.
+
+**Verification status:** findings above are static source observations; server startup, endpoint behavior, and tests remain unverified.
