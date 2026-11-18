@@ -138,3 +138,30 @@ This section supplements the maintainer-authored README above. The original text
 3. Add API tests for empty, populated, and malformed datasets; document which features are implemented versus planned.
 
 **Verification status:** findings above are static source observations; server startup, endpoint behavior, and tests remain unverified.
+
+
+---
+
+## Branch Activity & Development History
+
+**Audit date:** 2026-11-18 · **Comparison base:** `main`
+
+| Branch | Difference from `main` | Observed work / changed paths |
+|---|---:|---|
+| `copilot/create-complete-html-file` | 2 ahead / 10 behind | Large standalone `index.html` build |
+| `copilot/create-complete-website` | 2 / 10 | Alternate complete website implementation in `index.html` |
+| `copilot/create-standalone-index-html` | 2 / 10 | Standalone index-page implementation |
+| `copilot/emergency-fix-chronoarchive` | 1 / 10 | One unique commit; compare endpoint reported no file list |
+| `copilot/fix-index-html-complete` | 2 / 10 | Index-page repair/rebuild |
+| `copilot/replace-broken-index-html` | 3 / 10 | Replacement index-page implementation |
+| `copilot/urgent-final-push-chronoarchive` | 3 / 10 | Alternate index-page implementation |
+| `development` | 0 / 14 | No unique commits relative to current `main`; branch is behind |
+| `docs/portfolio-operating-kit-2026-11-13` | 5 / 3 | Activity log, agent guidance, worklog, company-fit notes, feature plan and README support docs |
+| `docs/project-status-audit20261116` | 1 / 1 | Project status snapshot: `PROJECT_STATUS.md` |
+
+### Open pull requests observed during this audit
+
+- [PR #9 — project status snapshot](https://github.com/Gitcoder12/ChronoArchive/pull/9)
+- [PR #8 — project roadmap, activity log and agent guides](https://github.com/Gitcoder12/ChronoArchive/pull/8)
+
+**Review note:** Several Copilot branches independently modify `index.html`; compare their rendered behavior and tests before choosing one. Do not merge competing page rewrites blindly. Verification here is limited to Git metadata and changed paths. No branches have been merged or deleted by this documentation update.
