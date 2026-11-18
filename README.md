@@ -138,3 +138,10 @@ This section supplements the maintainer-authored README above. The original text
 3. Add API tests for empty, populated, and malformed datasets; document which features are implemented versus planned.
 
 **Verification status:** findings above are static source observations; server startup, endpoint behavior, and tests remain unverified.
+
+---
+
+## Examples Used
+- Tracing the Rosetta Stone across its historical locations
+- Exploring Egypt's historical timeline
+- Identifying under-documented periods in a regional archive
