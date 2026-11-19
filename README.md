@@ -145,3 +145,27 @@ This section supplements the maintainer-authored README above. The original text
 - Tracing the Rosetta Stone across its historical locations
 - Exploring Egypt's historical timeline
 - Identifying under-documented periods in a regional archive
+
+
+---
+
+## Comparison with Existing Open-Source Projects
+
+ChronoArchive is described as a cross-institutional cultural-heritage explorer combining artifacts, institutions, historical records, timelines and possible gaps in documentation. The projects below are established collection/knowledge platforms that overlap with parts of this vision.
+
+| Project | Established focus | Relationship to ChronoArchive |
+|---|---|---|
+| [Omeka S](https://github.com/omeka/omeka-s) | Publishing and connecting digital cultural-heritage collections | Stronger established collection-publishing workflow; ChronoArchive's proposed distinction is a unified chronological and geographic view across institutions. |
+| [CollectiveAccess Providence](https://github.com/collectiveaccess/providence) | Collection-management and cataloguing software for museums and archives | More focused on professional collection management; ChronoArchive aims at cross-source discovery and historical navigation. |
+| [Wikibase](https://github.com/wikimedia/Wikibase) | Structured, linked, collaboratively maintained knowledge bases | A flexible knowledge infrastructure; ChronoArchive's proposed contribution is a domain-specific interface and timeline/gap-analysis layer. |
+
+### Where ChronoArchive is different
+- **Cross-institution exploration:** the concept connects museums, libraries, artifacts and historical records rather than managing one institution's collection alone.
+- **Timeline-first navigation:** historical chronology is a primary user experience, alongside country and artifact exploration.
+- **Documentation-gap research:** the project proposes surfacing under-documented periods as research leads, not merely displaying collection records.
+
+### Where established projects are stronger
+Omeka S, CollectiveAccess and Wikibase have mature data models, collection workflows and established user communities. ChronoArchive's README describes planned data sources and backend integrations; the current repository must demonstrate sourced records, provenance and a working gap-detection method before claiming comprehensive historical coverage.
+
+### Evidence and limitations
+Every artifact, location, date and historical claim needs a source, provenance, licence and confidence/status label. “Missing history” must be described as a coverage gap in the indexed sources, not proof that an event or record never existed. This is a scope comparison, not a data-quality or feature-parity benchmark.
