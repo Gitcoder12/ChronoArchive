@@ -87,14 +87,25 @@ ChronoArchive can be extended into research areas such as:
 
 ---
 
-## Installation
+## Open the browser demo locally (VS Code)
+
+1. Clone the repository and open it in VS Code:
 
 ```bash
-git clone https://github.com/your-username/chronoarchive.git
-cd chronoarchive
+git clone https://github.com/Gitcoder12/ChronoArchive.git
+cd ChronoArchive
 ```
 
-Open `index.html` in your browser.
+2. Start a local static web server from the repository root:
+
+```bash
+python -m http.server 8000
+```
+
+3. Open **http://localhost:8000** in your browser.
+4. Keep the terminal running while using the demo; press **Ctrl+C** to stop the server.
+
+No npm install or build step is required for the static page. The separate Express API is an early backend prototype; its current datasets are empty and gap detection is not implemented, so do not mistake the static sample page for a complete live historical-data platform.
 
 ---
 
