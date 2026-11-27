@@ -145,3 +145,9 @@ This section supplements the maintainer-authored README above. The original text
 - Tracing the Rosetta Stone across its historical locations
 - Exploring Egypt's historical timeline
 - Identifying under-documented periods in a regional archive
+
+---
+
+## Repository navigation
+
+[Alphabetical file index](FILE_INDEX.md)
